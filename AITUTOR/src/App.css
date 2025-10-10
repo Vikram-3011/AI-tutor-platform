@@ -1,42 +1,117 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+/* Root Layout */
+.app-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  font-family: "Poppins", sans-serif;
+  background-color: #f9fafc;
+}
+
+/* Sidebar Navigation */
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 230px;
+  background: linear-gradient(180deg, #1e2a3a 0%, #243b55 100%);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 10px;
+  z-index: 1000;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Sidebar Header */
+.nav-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 40px;
+}
+
+.logo-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-logo-img {
+  width: 35px;
+  height: 35px;
+  border-radius: 8px;
 }
 
 .logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #f9fefb;
+  margin: 0;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* Nav Links */
+.nav-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.nav-links li {
+  margin: 15px 0;
 }
 
-.card {
-  padding: 2em;
+.nav-links a {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  color: #ecf0f1;
+  text-decoration: none;
+  padding: 10px 12px;
+  border-radius: 6px;
+  transition: background 0.2s ease, transform 0.2s ease;
 }
 
-.read-the-docs {
-  color: #888;
+.nav-links a:hover {
+  background: #6f80ac;
+  color: #fff;
+  transform: translateX(5px);
+}
+
+/* Font Awesome Icons */
+.nav-links i {
+  font-size: 1.3rem;
+  width: 24px;
+  text-align: center;
+}
+
+/* Main Content */
+.main-content {
+  flex: 1;
+  margin-left: 230px; /* space for sidebar */
+  height: 100vh;
+  overflow-y: auto;
+  background-color: #f9fafc;
+  padding: 0; /* remove white space around content */
+}
+
+/* Remove any unwanted gaps on sides */
+.main-content > * {
+  margin: 0;
+  padding: 0;
+}
+
+/* Hide sidebar scroll bar */
+.sidebar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Root styles */
+#root {
+  margin: 0;
+  padding: 0;
+  max-width: 100%;
+  text-align: left;
 }
