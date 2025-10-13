@@ -10,23 +10,20 @@ const SignUp = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState("");
 
-  const handleSignup = async (e) => {
-    e.preventDefault();
-    setMessage("");
+ const handleSignup = async (e) => {
+  e.preventDefault();
+  setMessage("");
 
-    if (password !== confirmPassword) {
-      setMessage("Passwords do not match.");
-      return;
-    }
+  if (password !== confirmPassword) return setMessage("Passwords do not match.");
 
-    const { error } = await supabase.auth.signUp({ email, password });
-    if (error) {
-      setMessage(error.message);
-    } else {
-      setMessage("Signup successful! Please check your email to confirm.");
-      setTimeout(() => navigate("/signin"), 2000);
-    }
-  };
+  const { error } = await supabase.auth.signUp({ email, password });
+  if (error) setMessage(error.message);
+  else {
+    setMessage("Signup successful! Check your email.");
+    setTimeout(() => navigate("/signin"), 2000);
+  }
+};
+
 
   return (
     <div className="auth-container">

@@ -86,33 +86,60 @@ function SubjectDetail() {
               <h2 style={styles.topicTitle}>
                 {subject.topics[currentTopic - 1].title}
               </h2>
-              <p style={styles.text}>
+             <p style={styles.text}>
                 {subject.topics[currentTopic - 1].content}
               </p>
+
+              {/* Display code block if available */}
+                          {subject.topics[currentTopic - 1].examples &&
+                subject.topics[currentTopic - 1].examples.map((ex, idx) => (
+                  <div key={idx} style={{ marginBottom: "20px" }}>
+                    <p style={styles.text}><strong>Example {idx + 1}:</strong> {ex.description}</p>
+                    <div style={styles.codeBox}>
+                      <pre style={styles.pre}>
+                        <code>{ex.code}</code>
+                      </pre>
+                    </div>
+                  </div>
+              ))}
+
+
             </div>
           )}
         </div>
 
         {/* Navigation Buttons */}
-        <div style={styles.navButtons}>
-          {currentTopic > 0 ? (
-            <button onClick={handlePrev} style={styles.prevBtn}>
-              ← Previous
-            </button>
-          ) : (
-            <button onClick={() => navigate("/explore")} style={styles.backBtn}>
-              ⬅ Back to Explore
-            </button>
-          )}
+        {/* Navigation Buttons */}
+<div style={styles.navButtons}>
+  {/* Previous / Back buttons */}
+  {currentTopic > 0 ? (
+    <button onClick={handlePrev} style={styles.prevBtn}>
+      ← Previous
+    </button>
+  ) : (
+    <button onClick={() => navigate("/explore")} style={styles.backBtn}>
+      ⬅ Back to Explore
+    </button>
+  )}
 
-          {currentTopic < subject.topics.length ? (
-            <button onClick={handleNext} style={styles.nextBtn}>
-              Next →
-            </button>
-          ) : (
-            <p style={styles.completeText}>🎉 You’ve completed this subject!</p>
-          )}
-        </div>
+  {/* Next Topic / Completion */}
+  {currentTopic < subject.topics.length ? (
+    <button onClick={handleNext} style={styles.nextBtn}>
+      Next →
+    </button>
+  ) : (
+    <div style={styles.completeSection}>
+      <p style={styles.completeText}>🎉 You’ve completed this subject!</p>
+      <button
+        onClick={() => navigate("/explore")}
+        style={styles.nextSubjectBtn}
+      >
+        Next Subject →
+      </button>
+    </div>
+  )}
+</div>
+
       </div>
     </div>
   );
@@ -250,6 +277,23 @@ const styles = {
     color: "#fff",
     fontSize: "1.1rem",
   },
+  codeBox: {
+  backgroundColor: "#1e1e1e",
+  color: "#00ffae",
+  padding: "15px",
+  borderRadius: "10px",
+  marginTop: "15px",
+  fontFamily: "Consolas, 'Courier New', monospace",
+  overflowX: "auto",
+  boxShadow: "inset 0 0 10px rgba(0, 255, 174, 0.2)",
+  border: "1px solid rgba(255, 255, 255, 0.1)",
+},
+pre: {
+  margin: 0,
+  whiteSpace: "pre-wrap",
+  wordWrap: "break-word",
+},
+
 };
 
 // Animations

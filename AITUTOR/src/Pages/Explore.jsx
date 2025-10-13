@@ -43,27 +43,34 @@ function Explore() {
         {subjects.length > 0 ? (
           subjects.map((subject) => (
             <div
-              key={subject._id}
-              onClick={() =>
-                navigate(`/subject/${encodeURIComponent(subject.name)}`)
-              }
-              style={styles.card}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.transform = "translateY(-10px) scale(1.05)")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.transform = "translateY(0) scale(1)")
-              }
-            >
-              <div style={styles.cardContent}>
-                <h3 style={styles.cardTitle}>{subject.name}</h3>
-                <p style={styles.cardDesc}>
-                  Start your journey into {subject.name}. Learn the basics,
-                  understand the core concepts, and grow your skills.
-                </p>
-                <button style={styles.learnBtn}>Start Learning →</button>
-              </div>
-            </div>
+  key={subject._id}
+  onClick={() =>
+    navigate(`/subject/${encodeURIComponent(subject.name)}`)
+  }
+  style={styles.card}
+  onMouseEnter={(e) =>
+    (e.currentTarget.style.transform = "translateY(-10px) scale(1.05)")
+  }
+  onMouseLeave={(e) =>
+    (e.currentTarget.style.transform = "translateY(0) scale(1)")
+  }
+>
+  <div style={styles.cardContent}>
+    {/* Icon/Image */}
+    {subject.icon && (
+      <div style={styles.iconContainer}>
+        <img src={subject.icon} alt={subject.name} style={styles.icon} />
+      </div>
+    )}
+
+    <h3 style={styles.cardTitle}>{subject.name}</h3>
+    <p style={styles.cardDesc}>
+      Start your journey into {subject.name}. Learn the basics, understand the core concepts, and grow your skills.
+    </p>
+    <button style={styles.learnBtn}>Start Learning →</button>
+  </div>
+</div>
+
           ))
         ) : (
           <p style={styles.noSubjects}>No subjects found yet.</p>
@@ -175,6 +182,19 @@ const styles = {
     fontSize: "1.1rem",
   },
   
+  iconContainer: {
+  width: "60px",
+  height: "60px",
+  marginBottom: "15px",
+},
+icon: {
+  width: "100%",
+  height: "100%",
+  objectFit: "contain",
+  borderRadius: "12px",
+  boxShadow: "0 4px 15px rgba(0,0,0,0.3)",
+},
+
 };
 
 // animations
