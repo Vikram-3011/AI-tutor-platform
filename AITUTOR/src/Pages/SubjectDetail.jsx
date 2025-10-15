@@ -1,317 +1,414 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { createClient } from "@supabase/supabase-js";
 import { API_BASE_URL } from "../config";
 
-function SubjectDetail() {
-  const { name } = useParams();
-  const [subject, setSubject] = useState(null);
-  const [currentTopic, setCurrentTopic] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+// ✅ Initialize Supabase client
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_ANON_KEY
+);
 
+function SubjectDetail() {
+  const { name, topicTitle } = useParams();
+  const navigate = useNavigate();
+  const [subject, setSubject] = useState(null);
+  const [selectedTopicIndex, setSelectedTopicIndex] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [userEmail, setUserEmail] = useState(null);
+
+  // ✅ Notification state
+  const [notification, setNotification] = useState({ message: "", type: "" });
+  const [showNotification, setShowNotification] = useState(false);
+
+  // ✅ Get logged-in Supabase user email
+  useEffect(() => {
+    const getUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) setUserEmail(user.email);
+    };
+    getUser();
+  }, []);
+
+  // ✅ Fetch subject data
   useEffect(() => {
     fetch(`${API_BASE_URL}/api/subjects/${name}`)
       .then((res) => res.json())
       .then((data) => {
         setSubject(data);
         setLoading(false);
+        if (topicTitle && data.topics) {
+          const index = data.topics.findIndex(
+            (t) => t.title.toLowerCase() === topicTitle.toLowerCase()
+          );
+          if (index !== -1) setSelectedTopicIndex(index);
+        }
       })
       .catch((err) => {
         console.error("Error fetching subject:", err);
         setLoading(false);
       });
-  }, [name]);
+  }, [name, topicTitle]);
+
+  // ✅ Notification helper
+  const showNotif = (message, type = "success") => {
+    setNotification({ message, type });
+    setShowNotification(true);
+    setTimeout(() => setShowNotification(false), 3000);
+  };
+
+  // ✅ Handle Add Course
+  const handleAddCourse = async () => {
+    if (!userEmail) {
+      showNotif("Please login first to add this course.", "error");
+      return;
+    }
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/mycourses/add`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userEmail,
+          subjectName: subject.name,
+        }),
+      });
+      const data = await res.json();
+      showNotif(data.message || "Course added successfully!", "success");
+    } catch (err) {
+      console.error(err);
+      showNotif("Error adding course.", "error");
+    }
+  };
+
+  // ✅ Handle Finish Course
+  const handleFinishCourse = async () => {
+    if (!userEmail) return;
+    try {
+      await fetch(`${API_BASE_URL}/api/mycourses/finish`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userEmail,
+          subjectName: subject.name,
+        }),
+      });
+    } catch (err) {
+      console.error(err);
+    }
+    navigate("/explore");
+  };
+
+  const handleTakeQuiz = () => {
+    const topic = subject.topics[selectedTopicIndex];
+    navigate(`/take-quiz/${subject.name}/${topic.title}`);
+  };
 
   if (loading)
     return (
-      <div style={styles.loadingContainer}>
+      <div style={styles.page}>
         <div style={styles.spinner}></div>
-        <p style={styles.loadingText}>Preparing your learning journey...</p>
+        <p style={styles.loadingText}>Loading subject...</p>
       </div>
     );
 
   if (!subject)
     return (
       <div style={styles.page}>
-        <p style={{ textAlign: "center", color: "#fff" }}>
-          Subject not found.
-        </p>
+        <p style={{ textAlign: "center", color: "#fff" }}>Subject not found.</p>
       </div>
     );
 
-  const handleNext = () => {
-    if (currentTopic < subject.topics.length) setCurrentTopic(currentTopic + 1);
-  };
-
-  const handlePrev = () => {
-    if (currentTopic > 0) setCurrentTopic(currentTopic - 1);
-  };
-
+  const currentTopic = subject.topics[selectedTopicIndex];
   const progress =
-    (currentTopic / subject.topics.length) * 100 > 100
-      ? 100
-      : (currentTopic / subject.topics.length) * 100;
+    subject.topics.length > 0
+      ? Math.min(((selectedTopicIndex + 1) / subject.topics.length) * 100, 100)
+      : 0;
 
   return (
     <div style={styles.page}>
-      <div style={styles.container}>
-        {/* Header */}
-        <header style={styles.header}>
-          <h1 style={styles.title}>{subject.name}</h1>
-          <p style={styles.subtitle}>Your interactive learning guide</p>
-        </header>
+      {/* Notification */}
+      {showNotification && (
+        <div
+          style={{
+            ...styles.notification,
+            background:
+              notification.type === "success"
+                ? "linear-gradient(90deg, #16a34a, #22c55e)"
+                : "linear-gradient(90deg, #dc2626, #ef4444)",
+          }}
+        >
+          {notification.message}
+        </div>
+      )}
 
-        {/* Progress Bar */}
-        <div style={styles.progressBarContainer}>
-          <div style={{ ...styles.progressBar, width: `${progress}%` }}></div>
+      <div style={styles.layout}>
+        {/* Sidebar */}
+        <div style={styles.sidebar}>
+          <h2 style={styles.sidebarTitle}>📚 Topics</h2>
+          <ul style={styles.topicList}>
+            {subject.topics.map((topic, index) => (
+              <li
+                key={index}
+                onClick={() => setSelectedTopicIndex(index)}
+                style={{
+                  ...styles.topicItem,
+                  background:
+                    index === selectedTopicIndex
+                      ? "linear-gradient(90deg, #2563eb, #3b82f6)"
+                      : "transparent",
+                  color: index === selectedTopicIndex ? "#fff" : "#d1d5db",
+                }}
+              >
+                {topic.title}
+              </li>
+            ))}
+          </ul>
         </div>
 
-        {/* Content Section */}
-        <div style={styles.contentBox}>
-          {currentTopic === 0 ? (
-            <div style={styles.topicBox}>
-              <h2 style={styles.topicTitle}>📘 Introduction</h2>
-              <p style={styles.text}>
-                <strong>Overview:</strong> {subject.introduction.overview}
-              </p>
-              <p style={styles.text}>
-                <strong>Why Learn:</strong> {subject.introduction.why_learn}
-              </p>
-              <p style={styles.text}>
-                <strong>Purpose:</strong> {subject.introduction.purpose}
-              </p>
-            </div>
-          ) : (
-            <div style={styles.topicBox}>
-              <h2 style={styles.topicTitle}>
-                {subject.topics[currentTopic - 1].title}
-              </h2>
-             <p style={styles.text}>
-                {subject.topics[currentTopic - 1].content}
-              </p>
+        {/* Main Content */}
+        <div style={styles.contentArea}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "15px",
+            }}
+          >
+            <h1 style={styles.title}>{subject.name}</h1>
+            <button
+              style={{
+                ...styles.primaryBtn,
+                padding: "8px 20px",
+                fontSize: "0.9rem",
+              }}
+              onClick={handleAddCourse}
+            >
+              ➕ Add Course
+            </button>
+          </div>
 
-              {/* Display code block if available */}
-                          {subject.topics[currentTopic - 1].examples &&
-                subject.topics[currentTopic - 1].examples.map((ex, idx) => (
-                  <div key={idx} style={{ marginBottom: "20px" }}>
-                    <p style={styles.text}><strong>Example {idx + 1}:</strong> {ex.description}</p>
-                    <div style={styles.codeBox}>
-                      <pre style={styles.pre}>
-                        <code>{ex.code}</code>
-                      </pre>
-                    </div>
-                  </div>
+          <p style={styles.subtitle}>
+            Learn interactively and test your knowledge!
+          </p>
+
+          {/* Progress bar */}
+          <div style={styles.progressBarContainer}>
+            <div style={{ ...styles.progressBar, width: `${progress}%` }} />
+          </div>
+
+          {/* Topic content */}
+          <div style={styles.contentWrapper}>
+            <div style={styles.content}>
+              <h2 style={styles.topicTitle}>{currentTopic.title}</h2>
+              <p style={styles.text}>{currentTopic.content}</p>
+
+              {currentTopic.examples?.map((ex, idx) => (
+                <div key={idx} style={styles.exampleCard}>
+                  <p>
+                    <strong>Example {idx + 1}:</strong> {ex.description}
+                  </p>
+                  <pre style={styles.code}>{ex.code}</pre>
+                </div>
               ))}
-
-
             </div>
-          )}
+
+            {/* Navigation buttons */}
+            <div style={styles.buttonsContainer}>
+              <button style={styles.quizBtn} onClick={handleTakeQuiz}>
+                🧠 Take Quiz on {currentTopic.title}
+              </button>
+              <div style={styles.navButtons}>
+                <button
+                  style={styles.secondaryBtn}
+                  onClick={() => {
+                    if (selectedTopicIndex > 0)
+                      setSelectedTopicIndex(selectedTopicIndex - 1);
+                    else navigate("/explore");
+                  }}
+                >
+                  ⬅ {selectedTopicIndex > 0 ? "Previous" : "Back"}
+                </button>
+
+                <button
+                  style={styles.primaryBtn}
+                  onClick={async () => {
+                    if (selectedTopicIndex < subject.topics.length - 1) {
+                      setSelectedTopicIndex(selectedTopicIndex + 1);
+                    } else {
+                      await handleFinishCourse();
+                    }
+                  }}
+                >
+                  {selectedTopicIndex < subject.topics.length - 1
+                    ? "Next →"
+                    : "Finish 🎓"}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-
-        {/* Navigation Buttons */}
-        {/* Navigation Buttons */}
-<div style={styles.navButtons}>
-  {/* Previous / Back buttons */}
-  {currentTopic > 0 ? (
-    <button onClick={handlePrev} style={styles.prevBtn}>
-      ← Previous
-    </button>
-  ) : (
-    <button onClick={() => navigate("/explore")} style={styles.backBtn}>
-      ⬅ Back to Explore
-    </button>
-  )}
-
-  {/* Next Topic / Completion */}
-  {currentTopic < subject.topics.length ? (
-    <button onClick={handleNext} style={styles.nextBtn}>
-      Next →
-    </button>
-  ) : (
-    <div style={styles.completeSection}>
-      <p style={styles.completeText}>🎉 You’ve completed this subject!</p>
-      <button
-        onClick={() => navigate("/explore")}
-        style={styles.nextSubjectBtn}
-      >
-        Next Subject →
-      </button>
-    </div>
-  )}
-</div>
-
       </div>
     </div>
   );
 }
 
-/* --- STYLES --- */
+/* ----------------- STYLES ----------------- */
 const styles = {
   page: {
     minHeight: "100vh",
-    background: "linear-gradient(135deg, #0f2027, #203a43, #2c5364)",
-    color: "#fff",
-    fontFamily: "'Poppins', sans-serif",
+    background: "linear-gradient(135deg, #0f172a, #1e293b, #334155)",
     display: "flex",
     justifyContent: "center",
-    alignItems: "center",
-    padding: "40px 20px",
+    alignItems: "flex-start",
+    fontFamily: "'Poppins', sans-serif",
+    padding: "20px",
+    boxSizing: "border-box",
+    overflow: "hidden",
+    position: "relative",
   },
-  container: {
-    background: "rgba(255, 255, 255, 0.1)",
-    borderRadius: "20px",
-    backdropFilter: "blur(15px)",
-    border: "1px solid rgba(255, 255, 255, 0.2)",
-    boxShadow: "0 10px 30px rgba(0,0,0,0.3)",
-    maxWidth: "800px",
+  notification: {
+    position: "fixed",
+    top: "20px",
+    left: "50%",
+    transform: "translateX(-50%)",
+    padding: "12px 25px",
+    borderRadius: "25px",
+    color: "#fff",
+    fontWeight: "600",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.5)",
+    zIndex: 999,
+    animation: "fadeinout 3s forwards",
+  },
+  layout: {
+    display: "flex",
     width: "100%",
-    padding: "40px",
-    animation: "fadeIn 1s ease",
+    maxWidth: "1400px",
+    background: "rgba(255,255,255,0.05)",
+    backdropFilter: "blur(20px)",
+    borderRadius: "20px",
+    boxShadow: "0 10px 25px rgba(0,0,0,0.4)",
+    minHeight: "80vh",
   },
-  header: {
-    textAlign: "center",
-    marginBottom: "30px",
+  sidebar: {
+    width: "280px",
+    background: "rgba(255,255,255,0.07)",
+    padding: "20px 15px",
+    borderRight: "1px solid rgba(255,255,255,0.1)",
+    display: "flex",
+    flexDirection: "column",
+    overflowY: "auto",
   },
-  title: {
-    fontSize: "2.5rem",
-    fontWeight: "700",
-    background: "linear-gradient(90deg, #00c6ff, #0072ff)",
-    WebkitBackgroundClip: "text",
-    WebkitTextFillColor: "transparent",
+  sidebarTitle: {
+    fontSize: "1.3rem",
+    fontWeight: "600",
+    color: "#60a5fa",
+    marginBottom: "15px",
   },
-  subtitle: {
-    color: "#d0d0d0",
-    fontSize: "1rem",
+  topicList: { listStyle: "none", padding: 0, margin: 0 },
+  topicItem: {
+    padding: "10px 15px",
+    borderRadius: "10px",
+    marginBottom: "8px",
+    cursor: "pointer",
+    transition: "all 0.3s",
   },
+  contentArea: {
+    flex: 1,
+    display: "flex",
+    flexDirection: "column",
+    padding: "30px 40px",
+  },
+  title: { fontSize: "2rem", fontWeight: "700", color: "#3b82f6" },
+  subtitle: { color: "#d1d5db", fontSize: "1rem", textAlign: "center" },
   progressBarContainer: {
     width: "100%",
     height: "8px",
-    background: "rgba(255,255,255,0.15)",
+    background: "rgba(255,255,255,0.1)",
     borderRadius: "10px",
-    overflow: "hidden",
-    marginBottom: "30px",
+    marginBottom: "20px",
   },
   progressBar: {
     height: "8px",
-    background: "linear-gradient(90deg, #00c6ff, #0072ff)",
+    background: "linear-gradient(90deg, #2563eb, #3b82f6)",
     borderRadius: "10px",
     transition: "width 0.5s ease",
   },
-  contentBox: {
-    textAlign: "left",
-    color: "#f2f2f2",
-    lineHeight: "1.7",
-    minHeight: "250px",
+  contentWrapper: { display: "flex", flexDirection: "column" },
+  content: { color: "#e2e8f0" },
+  topicTitle: { fontSize: "1.7rem", color: "#93c5fd", marginBottom: "12px" },
+  text: { fontSize: "1rem", lineHeight: "1.8" },
+  exampleCard: {
+    background: "rgba(255,255,255,0.08)",
+    padding: "12px",
+    borderRadius: "10px",
+    marginTop: "12px",
   },
-  topicBox: {
-    animation: "slideIn 0.6s ease",
+  code: {
+    background: "#111827",
+    padding: "10px",
+    borderRadius: "8px",
+    color: "#a5b4fc",
+    overflowX: "auto",
   },
-  topicTitle: {
-    fontSize: "1.6rem",
-    color: "#00c6ff",
+  buttonsContainer: { marginTop: "25px" },
+  quizBtn: {
+    background: "linear-gradient(90deg, #16a34a, #22c55e)",
+    border: "none",
+    borderRadius: "25px",
+    padding: "10px 20px",
+    fontWeight: "600",
+    fontSize: "0.9rem",
+    color: "#fff",
+    cursor: "pointer",
     marginBottom: "15px",
   },
-  text: {
-    marginBottom: "12px",
-    fontSize: "1rem",
-    color: "#e0e0e0",
-  },
-  navButtons: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginTop: "40px",
-  },
-  prevBtn: {
-    padding: "10px 25px",
-    borderRadius: "30px",
+  navButtons: { display: "flex", justifyContent: "space-between", gap: "15px" },
+  primaryBtn: {
+    background: "linear-gradient(90deg, #2563eb, #3b82f6)",
     border: "none",
-    background: "linear-gradient(90deg, #00c6ff, #0072ff)",
-    color: "#fff",
+    borderRadius: "30px",
+    padding: "12px 25px",
     fontWeight: "600",
     cursor: "pointer",
-    transition: "transform 0.3s ease",
-  },
-  backBtn: {
-    padding: "10px 25px",
-    borderRadius: "30px",
-    border: "none",
-    background: "linear-gradient(90deg, #171fbbff, #2575fc)",
     color: "#fff",
-    fontWeight: "600",
-    cursor: "pointer",
-    transition: "transform 0.3s ease",
   },
-  nextBtn: {
-    padding: "10px 25px",
-    borderRadius: "30px",
-    border: "none",
-    background: "linear-gradient(90deg, #2ecc71, #27ae60)",
+  secondaryBtn: {
+    background: "rgba(255,255,255,0.15)",
+    border: "1px solid rgba(255,255,255,0.25)",
+    borderRadius: "25px",
+    padding: "10px 20px",
+    fontWeight: "500",
+    cursor: "pointer",
     color: "#fff",
-    fontWeight: "600",
-    cursor: "pointer",
-    transition: "transform 0.3s ease",
-  },
-  completeText: {
-    color: "#2ecc71",
-    fontWeight: "600",
-  },
-  loadingContainer: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    height: "100vh",
-    background: "linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)",
   },
   spinner: {
     width: "50px",
     height: "50px",
     border: "5px solid rgba(255,255,255,0.2)",
-    borderTop: "5px solid #00c6ff",
+    borderTop: "5px solid #3b82f6",
     borderRadius: "50%",
     animation: "spin 1s linear infinite",
+    marginBottom: "15px",
   },
-  loadingText: {
-    marginTop: "15px",
-    color: "#fff",
-    fontSize: "1.1rem",
-  },
-  codeBox: {
-  backgroundColor: "#1e1e1e",
-  color: "#00ffae",
-  padding: "15px",
-  borderRadius: "10px",
-  marginTop: "15px",
-  fontFamily: "Consolas, 'Courier New', monospace",
-  overflowX: "auto",
-  boxShadow: "inset 0 0 10px rgba(0, 255, 174, 0.2)",
-  border: "1px solid rgba(255, 255, 255, 0.1)",
-},
-pre: {
-  margin: 0,
-  whiteSpace: "pre-wrap",
-  wordWrap: "break-word",
-},
-
+  loadingText: { color: "#fff", fontSize: "1.1rem" },
 };
 
-// Animations
 const styleSheet = document.createElement("style");
 styleSheet.innerHTML = `
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
-@keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.97); }
-  to { opacity: 1; transform: scale(1); }
-}
-@keyframes slideIn {
-  from { opacity: 0; transform: translateY(15px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-`;
+
+@keyframes fadeinout {
+  0% { opacity: 0; transform: translateY(-10px); }
+  10% { opacity: 1; transform: translateY(0); }
+  90% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-10px); }
+}`;
 document.head.appendChild(styleSheet);
 
 export default SubjectDetail;

@@ -131,6 +131,9 @@ function Profile() {
           </label>
         </div>
 
+
+
+
         <form onSubmit={handleSubmit} style={styles.form}>
           <label style={styles.label}>Name</label>
           <input
@@ -179,11 +182,19 @@ function Profile() {
             placeholder="Your phone number"
             style={styles.input}
           />
+          
 
           <button type="submit" style={styles.button}>
             Save Profile
           </button>
-
+          
+            <button
+            type="button"
+            style={{ ...styles.button, marginTop: "10px", background: "linear-gradient(135deg, #444, #222)" }}
+            onClick={() => navigate("/change-password")}
+          >
+            Change Password
+          </button>
           {/* Message below the button */}
           {message && <p style={styles.message}>{message}</p>}
         </form>

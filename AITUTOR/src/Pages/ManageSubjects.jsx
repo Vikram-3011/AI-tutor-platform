@@ -35,7 +35,7 @@ function ManageSubjects() {
   };
 
   const handleEdit = (id) => {
-    navigate(`/edit-subject/${id}`);
+    navigate(`/edit-subject/${id}`); // pass _id to match backend
   };
 
   const filteredSubjects = subjects.filter((s) =>
@@ -43,11 +43,14 @@ function ManageSubjects() {
   );
 
   if (loading)
-    return (
+  return (
+    <div style={styles.page}>
       <h2 style={{ textAlign: "center", marginTop: "50px", color: "#ffd700" }}>
         Loading subjects...
       </h2>
-    );
+    </div>
+  );
+
 
   return (
     <div style={styles.page}>
@@ -81,13 +84,13 @@ function ManageSubjects() {
                   style={styles.editBtn}
                   onClick={() => handleEdit(subject._id)}
                 >
-                   Edit
+                  Edit
                 </button>
                 <button
                   style={styles.deleteBtn}
                   onClick={() => handleDelete(subject._id)}
                 >
-                   Delete
+                  Delete
                 </button>
               </div>
             </div>
@@ -97,114 +100,21 @@ function ManageSubjects() {
     </div>
   );
 }
-
+// Styles (unchanged)
 const styles = {
-  page: {
-    minHeight: "100vh",
-    background: "linear-gradient(135deg, #0c111b, #1b2430)", // dark premium gradient
-    color: "#fff",
-    fontFamily: "'Poppins', sans-serif",
-    padding: "50px 20px",
-    display: "flex",
-    justifyContent: "center",
-  },
-  container: {
-    width: "100%",
-    maxWidth: "950px",
-    backdropFilter: "blur(15px)",
-    display: "flex",
-    flexDirection: "column",
-    gap: "20px",
-  },
-  title: {
-    textAlign: "center",
-    fontSize: "2.5rem",
-    marginBottom: "25px",
-    fontWeight: "700",
-    color: "#ffd700",
-    textShadow: "0 3px 15px rgba(0,0,0,0.7)",
-  },
-  search: {
-    width: "100%",
-    padding: "14px 20px",
-    borderRadius: "15px",
-    border: "none",
-    outline: "none",
-    marginBottom: "20px",
-    background: "rgba(255,255,255,0.05)",
-    color: "#fef9f3",
-    fontSize: "1rem",
-    boxShadow: "inset 0 2px 8px rgba(0,0,0,0.5)",
-    backdropFilter: "blur(5px)",
-    transition: "all 0.3s ease",
-  },
-  card: {
-    background: "rgba(255,255,255,0.05)",
-    borderRadius: "20px",
-    padding: "25px",
-    boxShadow: "0 10px 35px rgba(0,0,0,0.6)",
-    border: "1px solid rgba(255,255,255,0.15)",
-    transition: "all 0.3s ease",
-    backdropFilter: "blur(10px)",
-  },
-  subjectHeader: {
-    display: "flex",
-    alignItems: "center",
-    gap: "15px",
-  },
-  icon: {
-    width: "45px",
-    height: "45px",
-    borderRadius: "10px",
-    objectFit: "cover",
-    boxShadow: "0 4px 15px rgba(0,0,0,0.5)",
-  },
-  subjectName: {
-    color: "#ffd700",
-    fontSize: "1.5rem",
-    margin: 0,
-    fontWeight: "600",
-    textShadow: "0 2px 8px rgba(0,0,0,0.7)",
-  },
-  desc: {
-    marginTop: "10px",
-    color: "#cbd5e1",
-    fontSize: "1rem",
-    lineHeight: "1.5",
-  },
-  actions: {
-    display: "flex",
-    gap: "12px",
-    marginTop: "15px",
-  },
-  editBtn: {
-    background: "linear-gradient(135deg, #222, #444)",
-    border: "none",
-    padding: "10px 20px",
-    borderRadius: "25px",
-    color: "#ffd700",
-    cursor: "pointer",
-    fontWeight: "600",
-    boxShadow: "0 6px 20px rgba(0,0,0,0.6)",
-    transition: "all 0.3s ease",
-  },
-  deleteBtn: {
-    background: "linear-gradient(135deg, #4b0000, #a60000)",
-    border: "none",
-    padding: "10px 20px",
-    borderRadius: "25px",
-    color: "#fff",
-    cursor: "pointer",
-    fontWeight: "600",
-    boxShadow: "0 6px 20px rgba(0,0,0,0.6)",
-    transition: "all 0.3s ease",
-  },
-  empty: {
-    textAlign: "center",
-    color: "#aaa",
-    marginTop: "20px",
-    fontSize: "1.1rem",
-  },
+  page: { minHeight: "100vh", background: "linear-gradient(135deg, #0c111b, #1b2430)", color: "#fff", fontFamily: "'Poppins', sans-serif", padding: "50px 20px", display: "flex", justifyContent: "center" },
+  container: { width: "100%", maxWidth: "950px", backdropFilter: "blur(15px)", display: "flex", flexDirection: "column", gap: "20px" },
+  title: { textAlign: "center", fontSize: "2.5rem", marginBottom: "25px", fontWeight: "700", color: "#ffd700", textShadow: "0 3px 15px rgba(0,0,0,0.7)" },
+  search: { width: "100%", padding: "14px 20px", borderRadius: "15px", border: "none", outline: "none", marginBottom: "20px", background: "rgba(255,255,255,0.05)", color: "#fef9f3", fontSize: "1rem", boxShadow: "inset 0 2px 8px rgba(0,0,0,0.5)", backdropFilter: "blur(5px)", transition: "all 0.3s ease" },
+  card: { background: "rgba(255,255,255,0.05)", borderRadius: "20px", padding: "25px", boxShadow: "0 10px 35px rgba(0,0,0,0.6)", border: "1px solid rgba(255,255,255,0.15)", transition: "all 0.3s ease", backdropFilter: "blur(10px)" },
+  subjectHeader: { display: "flex", alignItems: "center", gap: "15px" },
+  icon: { width: "45px", height: "45px", borderRadius: "10px", objectFit: "cover", boxShadow: "0 4px 15px rgba(0,0,0,0.5)" },
+  subjectName: { color: "#ffd700", fontSize: "1.5rem", margin: 0, fontWeight: "600", textShadow: "0 2px 8px rgba(0,0,0,0.7)" },
+  desc: { marginTop: "10px", color: "#cbd5e1", fontSize: "1rem", lineHeight: "1.5" },
+  actions: { display: "flex", gap: "12px", marginTop: "15px" },
+  editBtn: { background: "linear-gradient(135deg, #222, #444)", border: "none", padding: "10px 20px", borderRadius: "25px", color: "#ffd700", cursor: "pointer", fontWeight: "600", boxShadow: "0 6px 20px rgba(0,0,0,0.6)", transition: "all 0.3s ease" },
+  deleteBtn: { background: "linear-gradient(135deg, #4b0000, #a60000)", border: "none", padding: "10px 20px", borderRadius: "25px", color: "#fff", cursor: "pointer", fontWeight: "600", boxShadow: "0 6px 20px rgba(0,0,0,0.6)", transition: "all 0.3s ease" },
+  empty: { textAlign: "center", color: "#aaa", marginTop: "20px", fontSize: "1.1rem" },
 };
 
 export default ManageSubjects;

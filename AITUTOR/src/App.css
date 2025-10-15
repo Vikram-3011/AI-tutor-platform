@@ -15,7 +15,7 @@
   top: 0;
   bottom: 0;
   width: 230px;
-  background: linear-gradient(180deg, #1e2a3a 0%, #243b55 100%);
+  background: linear-gradient(#0c111b);
   color: #fff;
   display: flex;
   flex-direction: column;
@@ -114,4 +114,52 @@
   padding: 0;
   max-width: 100%;
   text-align: left;
+}
+
+.nav-links li {
+  list-style: none;
+  margin-bottom: 10px;
+}
+
+.nav-links li a {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: #fff; /* Make text white */
+  padding: 10px 15px;
+  border-radius: 10px;
+  transition: background 0.2s;
+}
+
+.nav-links li a:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.nav-links li a img.nav-icon {
+  width: 20px;      /* Smaller icon */
+  height: 20px;     /* Smaller icon */
+  margin-right: 10px;
+  filter: invert(1); /* Makes icon white if it is a dark PNG */
+}
+
+.nav-links li a span {
+  font-size: 16px;
+  vertical-align: middle;
+}
+.nav-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px;
+}
+
+.nav-header img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.nav-header h2 {
+  color: #fff;
+  margin: 0;
 }

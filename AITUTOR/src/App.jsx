@@ -11,6 +11,22 @@ import EditSubject from "./Pages/EditSubject.jsx";
 import Profile from "./Pages/Profile.jsx";
 import { supabase } from "./supabaseClient";
 import "./App.css";
+import ManageRoles from "./Pages/ManageRoles.jsx";
+import ChatBot from "./Pages/ChatBot.jsx";
+import UploadQuiz from "./Pages/UploadQuiz";
+import AttendQuiz from "./Pages/AttendQuiz";
+import Landingpage from "./Pages/LandingPage.jsx";
+import ChangePassword from "./Pages/ChangePassword.jsx";
+import Mycourse from "./Pages/MyCourses.jsx";
+
+import homeIcon from "./assets/home.png";
+import commentIcon from "./assets/comment.png";
+import documentIcon from "./assets/manage.png";
+import exploreIcon from "./assets/globe.png";
+import plusIcon from "./assets/upload.png";
+import userIcon from "./assets/user-add.png";
+import logo from "./assets/twitch.png";
+import courseIcon from "./assets/learning.png";
 
 // ✅ Sidebar User Avatar Menu
 function UserMenu({ theme, setTheme }) {
@@ -18,6 +34,8 @@ function UserMenu({ theme, setTheme }) {
   const [avatar, setAvatar] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
+
+   const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -27,8 +45,8 @@ function UserMenu({ theme, setTheme }) {
 
       const emailEncoded = encodeURIComponent(supaUser.email);
       try {
-        const res = await fetch(`${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/profile/${emailEncoded}`);
-        if (res.ok) {
+       const res = await fetch(`${API_BASE}/api/profile/${emailEncoded}`);
+         if (res.ok) {
           const data = await res.json();
           if (data.avatar) {
             const base64Avatar = data.avatar.startsWith("data:")
@@ -44,10 +62,15 @@ function UserMenu({ theme, setTheme }) {
     fetchUser();
   }, []);
 
-  const handleSignOut = async () => {
+const handleSignOut = async () => {
+  try {
     await supabase.auth.signOut();
     navigate("/signin");
-  };
+    window.location.reload(); // ✅ force refresh after navigating
+  } catch (error) {
+    console.error("Error signing out:", error);
+  }
+};
 
   const getInitial = () => user?.email?.[0]?.toUpperCase() || "?";
 
@@ -88,15 +111,21 @@ function App() {
       <div className="app-container">
         {/* Sidebar */}
         <nav className={`sidebar ${theme}`}>
-          <div className="nav-header">
-            <h2 className="logo">AI Tutor</h2>
-          </div>
+          <div className="nav-header" >
+  <img src={logo} alt="AI Tutor Logo"  />
+  <h2 className="logo" >AI Tutor</h2>
+</div>
+
 
           <ul className="nav-links">
-            <li><a href="/home"><i className="fas fa-home"></i><span>Home</span></a></li>
-            <li><a href="/Explore"><i className="fas fa-compass"></i><span>Explore</span></a></li>
-            <li><a href="/upload-subject"><i className="fas fa-upload"></i><span>Upload</span></a></li>
-            <li><a href="/manage-subjects"><i className="fas fa-cogs"></i><span>Manage Subjects</span></a></li>
+            <li><a href="/home">  <img src={homeIcon} alt="Home" className="nav-icon" /><span>Home</span></a></li>
+            <li><a href="/Explore"> <img src={exploreIcon} alt="Home" className="nav-icon" /><span>Explore</span></a></li>
+            <li><a href="/upload-subject"> <img src={plusIcon} alt="Home" className="nav-icon" /><span>Upload</span></a></li>
+            <li><a href="/manage-subjects"> <img src={documentIcon} alt="Home" className="nav-icon" /><span>Manage Subjects</span></a></li>
+            <li><a href="/manage-roles"> <img src={userIcon} alt="Home" className="nav-icon" /><span>Manage Roles</span></a></li>
+            <li><a href="/chat"> <img src={commentIcon} alt="Home" className="nav-icon" /><span>AI Chat</span></a></li>
+            <li><a href="/landingpage"> <img src={commentIcon} alt="Home" className="nav-icon" /><span>landingpage</span></a></li>
+            <li><a href="/my-courses"> <img src={courseIcon} alt="Home" className="nav-icon" /><span>My Courses</span></a></li>
           </ul>
 
           {/* Bottom User Menu */}
@@ -106,6 +135,8 @@ function App() {
         {/* Main Content */}
         <div className="main-content">
           <Routes>
+            
+            <Route path="/landingpage" element={<Landingpage />} />
             <Route path="/upload-subject" element={<UploadSubject />} />
             <Route path="/signin" element={<SignIn />} />
             <Route path="/signup" element={<SignUp />} />
@@ -116,6 +147,12 @@ function App() {
             <Route path="/manage-subjects" element={<ManageSubjects />} />
             <Route path="/edit-subject/:id" element={<EditSubject />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/manage-roles" element={<ManageRoles />} />
+            <Route path="/chat" element={<ChatBot />} />
+            <Route path="/upload-quiz/:subjectName/:topicTitle" element={<UploadQuiz />} />
+            <Route path="/take-quiz/:subjectName/:topicTitle" element={<AttendQuiz />} />
+            <Route path="/change-password" element={<ChangePassword />} />
+            <Route path="/my-courses" element={<Mycourse />} />
           </Routes>
         </div>
       </div>
@@ -181,6 +218,8 @@ const styles = {
     cursor: "pointer",
     borderBottom: "1px solid rgba(255,255,255,0.1)",
   },
+  
+  
 };
 
 export default App;

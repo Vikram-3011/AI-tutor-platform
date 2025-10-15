@@ -22,55 +22,48 @@ function Explore() {
 
   if (loading)
     return (
-      <div style={styles.loadingContainer}>
+      <div style={styles.loadingPage}>
         <div style={styles.spinner}></div>
-        <p style={styles.loadingText}>Loading amazing subjects...</p>
+        <p style={styles.loadingText}>Loading subjects...</p>
       </div>
     );
 
   return (
     <div style={styles.page}>
-      {/* Header Section */}
       <header style={styles.header}>
-        <h1 style={styles.title}>Explore Knowledge</h1>
+        <h1 style={styles.title}>Explore Subjects</h1>
         <p style={styles.subtitle}>
-          Discover exciting subjects and dive deep into learning.
+          Dive into curated learning experiences crafted for excellence.
         </p>
       </header>
 
-      {/* Subjects Grid */}
       <div style={styles.grid}>
         {subjects.length > 0 ? (
           subjects.map((subject) => (
             <div
-  key={subject._id}
-  onClick={() =>
-    navigate(`/subject/${encodeURIComponent(subject.name)}`)
-  }
-  style={styles.card}
-  onMouseEnter={(e) =>
-    (e.currentTarget.style.transform = "translateY(-10px) scale(1.05)")
-  }
-  onMouseLeave={(e) =>
-    (e.currentTarget.style.transform = "translateY(0) scale(1)")
-  }
->
-  <div style={styles.cardContent}>
-    {/* Icon/Image */}
-    {subject.icon && (
-      <div style={styles.iconContainer}>
-        <img src={subject.icon} alt={subject.name} style={styles.icon} />
-      </div>
-    )}
-
-    <h3 style={styles.cardTitle}>{subject.name}</h3>
-    <p style={styles.cardDesc}>
-      Start your journey into {subject.name}. Learn the basics, understand the core concepts, and grow your skills.
-    </p>
-    <button style={styles.learnBtn}>Start Learning →</button>
-  </div>
-</div>
-
+              key={subject._id}
+              style={styles.card}
+              onClick={() =>
+                navigate(`/subject/${encodeURIComponent(subject.name)}`)
+              }
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.transform = "translateY(-8px) scale(1.03)")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.transform = "translateY(0) scale(1)")
+              }
+            >
+              <div style={styles.cardHeader}>
+                {subject.icon && (
+                  <img src={subject.icon} alt={subject.name} style={styles.icon} />
+                )}
+                <h3 style={styles.cardTitle}>{subject.name}</h3>
+              </div>
+              <p style={styles.cardDesc}>
+                Unlock the essentials of {subject.name}. Build a foundation and grow deeper with each topic.
+              </p>
+              <button style={styles.learnBtn}>Start Learning →</button>
+            </div>
           ))
         ) : (
           <p style={styles.noSubjects}>No subjects found yet.</p>
@@ -80,76 +73,84 @@ function Explore() {
   );
 }
 
-/* --- STYLES --- */
 const styles = {
   page: {
     minHeight: "100vh",
-    background:
-      "linear-gradient(135deg, #0f232cff, #203a43, #2c5364)", // dark glass background
-    color: "#fff",
+    background: "radial-gradient(circle at 20% 20%, #0f172a, #020617 70%)",
     fontFamily: "'Poppins', sans-serif",
-    padding: "60px 20px",
-    textAlign: "center",
+    color: "#fff",
+    padding: "60px 30px",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
   },
   header: {
+    textAlign: "center",
     marginBottom: "50px",
-    animation: "fadeInDown 1s ease",
   },
   title: {
-    fontSize: "3rem",
+    fontSize: "2.8rem",
     fontWeight: "700",
-    marginBottom: "10px",
-    background: "linear-gradient(90deg, #00c6ff, #0072ff)",
+    background: "linear-gradient(90deg, #2563eb, #60a5fa)",
     WebkitBackgroundClip: "text",
     WebkitTextFillColor: "transparent",
   },
   subtitle: {
-    fontSize: "1.2rem",
-    color: "#d0d0d0",
+    color: "#cbd5e1",
+    fontSize: "1.1rem",
+    marginTop: "10px",
   },
   grid: {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-  gap: "30px",
-  maxWidth: "1200px", // increased max width
-  margin: "0 auto",
-},
-
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+    gap: "30px",
+    width: "100%",
+    maxWidth: "1200px",
+  },
   card: {
-    background: "rgba(255, 255, 255, 0.1)",
+    background: "rgba(255,255,255,0.05)",
+    backdropFilter: "blur(20px)",
     borderRadius: "20px",
-    backdropFilter: "blur(10px)",
-    border: "1px solid rgba(255, 255, 255, 0.2)",
-    boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
-    padding: "30px",
+    border: "1px solid rgba(255,255,255,0.1)",
+    boxShadow: "0 15px 40px rgba(0,0,0,0.5)",
+    padding: "25px 20px",
     textAlign: "left",
     transition: "transform 0.3s ease, box-shadow 0.3s ease",
     cursor: "pointer",
-  },
-  cardContent: {
     display: "flex",
     flexDirection: "column",
     justifyContent: "space-between",
-    height: "100%",
+  },
+  cardHeader: {
+    display: "flex",
+    alignItems: "center",
+    gap: "15px",
+    marginBottom: "15px",
+  },
+  icon: {
+    width: "45px",
+    height: "45px",
+    borderRadius: "10px",
+    objectFit: "cover",
+    boxShadow: "0 0 15px rgba(255,255,255,0.1)",
   },
   cardTitle: {
-    fontSize: "1.5rem",
+    fontSize: "1.4rem",
     fontWeight: "600",
-    color: "#fff",
-    marginBottom: "10px",
+    color: "#93c5fd",
   },
   cardDesc: {
-    color: "#ddd",
+    color: "#e2e8f0",
     fontSize: "0.95rem",
-    lineHeight: "1.5",
+    lineHeight: "1.6",
     marginBottom: "20px",
   },
   learnBtn: {
     alignSelf: "flex-start",
-    background: "linear-gradient(90deg, #00c6ff, #0072ff)",
+    padding: "10px 22px",
+    borderRadius: "25px",
     border: "none",
-    borderRadius: "30px",
-    padding: "10px 20px",
+    background: "linear-gradient(90deg, #2563eb, #3b82f6)",
     color: "#fff",
     fontWeight: "600",
     cursor: "pointer",
@@ -157,59 +158,40 @@ const styles = {
   },
   noSubjects: {
     gridColumn: "1 / -1",
-    color: "#bbb",
+    textAlign: "center",
+    color: "#aaa",
   },
-  loadingContainer: {
+  loadingPage: {
     display: "flex",
     flexDirection: "column",
-    alignItems: "center",
     justifyContent: "center",
+    alignItems: "center",
     height: "100vh",
-    background:
-      "linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)",
+    background: "radial-gradient(circle at 20% 20%, #0f172a, #020617 70%)",
   },
   spinner: {
-    width: "45px",
-    height: "45px",
+    width: "50px",
+    height: "50px",
     border: "5px solid rgba(255,255,255,0.2)",
-    borderTop: "5px solid #00c6ff",
+    borderTop: "5px solid #3b82f6",
     borderRadius: "50%",
     animation: "spin 1s linear infinite",
+    marginBottom: "15px",
   },
   loadingText: {
-    marginTop: "15px",
     color: "#fff",
     fontSize: "1.1rem",
+    marginTop: "10px",
   },
-  
-  iconContainer: {
-  width: "60px",
-  height: "60px",
-  marginBottom: "15px",
-},
-icon: {
-  width: "100%",
-  height: "100%",
-  objectFit: "contain",
-  borderRadius: "12px",
-  boxShadow: "0 4px 15px rgba(0,0,0,0.3)",
-},
-
 };
 
-// animations
+// Animations
 const styleSheet = document.createElement("style");
 styleSheet.innerHTML = `
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
-}
-
-@keyframes fadeInDown {
-  0% { opacity: 0; transform: translateY(-20px); }
-  100% { opacity: 1; transform: translateY(0); }
-}
-`;
+}`;
 document.head.appendChild(styleSheet);
 
 export default Explore;
