@@ -1,269 +1,255 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "../supabaseClient"; 
+import { createClient } from "@supabase/supabase-js";
 import { API_BASE_URL } from "../config";
 
-function ManageRoles() {
-  const [users, setUsers] = useState([]);
+// Initialize Supabase
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_ANON_KEY
+);
+
+function MyCourses() {
+  const [courses, setCourses] = useState([]);
+  const [filter, setFilter] = useState("unfinished"); // default filter
   const [loading, setLoading] = useState(true);
-  const [currentEmail, setCurrentEmail] = useState("");
-  const [message, setMessage] = useState("");
-  const [search, setSearch] = useState("");
-  const [filterRole, setFilterRole] = useState("all");
   const navigate = useNavigate();
 
   useEffect(() => {
-    getCurrentUser();
+    const fetchCourses = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          setLoading(false);
+          return;
+        }
+
+        const res = await fetch(`${API_BASE_URL}/api/mycourses/${user.email}`);
+        if (!res.ok) throw new Error("Failed to fetch courses");
+        const data = await res.json();
+
+        const fetchedCourses = Array.isArray(data)
+          ? data[0]?.courses || []
+          : data.courses || [];
+
+        setCourses(fetchedCourses);
+      } catch (err) {
+        console.error("Error fetching MyCourses:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCourses();
   }, []);
 
-  const getCurrentUser = async () => {
-    const { data } = await supabase.auth.getUser();
-    if (!data?.user) {
-      navigate("/signin");
-      return;
-    }
-    setCurrentEmail(data.user.email);
-    fetchUsers(data.user.email);
-  };
+  const filteredCourses = courses.filter((c) =>
+    filter === "unfinished" ? c.status !== "finished" : c.status === "finished"
+  );
 
-  const fetchUsers = async (email) => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/roles/all`);
-      const data = await res.json();
-      const requester = data.find((u) => u.email === email);
-
-      if (!requester || requester.role !== "superadmin") {
-        setMessage("Access denied. Only super admin can view this page.");
-        setLoading(false);
-        return;
-      }
-
-      setUsers(data);
-      setLoading(false);
-    } catch (error) {
-      console.error("Error fetching users:", error);
-      setMessage("Error loading users");
-      setLoading(false);
-    }
-  };
-
-  const showNotification = (msg) => {
-    setMessage(msg);
-    setTimeout(() => setMessage(""), 3000);
-  };
-
-  const handlePromote = async (targetEmail) => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/roles/promote`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ requesterEmail: currentEmail, targetEmail }),
-      });
-      const data = await res.json();
-      showNotification(data.message);
-      fetchUsers(currentEmail);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleDemote = async (targetEmail) => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/roles/demote`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ requesterEmail: currentEmail, targetEmail }),
-      });
-      const data = await res.json();
-      showNotification(data.message);
-      fetchUsers(currentEmail);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const filteredUsers = users.filter((u) => {
-    const matchesSearch = u.email.toLowerCase().includes(search.toLowerCase());
-    const matchesRole = filterRole === "all" || u.role === filterRole;
-    return matchesSearch && matchesRole;
-  });
-
-  if (loading)
+  if (loading) {
     return (
       <div style={styles.loadingContainer}>
         <div style={styles.spinner}></div>
-        <p style={styles.loadingText}>Loading users...</p>
+        <p style={styles.loadingText}>Fetching your courses...</p>
       </div>
     );
+  }
 
   return (
     <div style={styles.page}>
-      <h1 style={styles.title}>⚙️ Role Management</h1>
-      <p style={styles.note}>Only Super Admin can access this page.</p>
+      <h1 style={styles.title}>🎓 My Learning Courses</h1>
 
-      {message && <div style={styles.notification}>{message}</div>}
-
-      <div style={styles.filters}>
-        <input
-          type="text"
-          placeholder="Search by email..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          style={styles.search}
-        />
-        <select
-          value={filterRole}
-          onChange={(e) => setFilterRole(e.target.value)}
-          style={styles.select}
+      {/* Filter Buttons */}
+      <div style={styles.filterContainer}>
+        <button
+          onClick={() => setFilter("unfinished")}
+          style={{
+            ...styles.filterButton,
+            background:
+              filter === "unfinished"
+                ? "linear-gradient(135deg,#2563eb,#3b82f6)"
+                : "rgba(255,255,255,0.1)",
+            color: filter === "unfinished" ? "#fff" : "#cbd5e1",
+          }}
         >
-          <option value="all">All Roles</option>
-          <option value="user">User</option>
-          <option value="admin">Admin</option>
-          <option value="superadmin">Superadmin</option>
-        </select>
+          Unfinished
+        </button>
+        <button
+          onClick={() => setFilter("finished")}
+          style={{
+            ...styles.filterButton,
+            background:
+              filter === "finished"
+                ? "linear-gradient(135deg,#22c55e,#15803d)"
+                : "rgba(255,255,255,0.1)",
+            color: filter === "finished" ? "#fff" : "#cbd5e1",
+          }}
+        >
+          Finished
+        </button>
       </div>
 
-      {filteredUsers.length === 0 ? (
-        <p style={styles.noData}>No users found.</p>
-      ) : (
-        <div style={styles.userGrid}>
-          {filteredUsers.map((user) => (
-            <div key={user.email} style={styles.userCard}>
-              <div style={styles.userInfo}>
-                <h3 style={styles.userName}>{user.name || "Unnamed User"}</h3>
-                <p style={styles.userEmail}>{user.email}</p>
-                <span style={styles.roleBadge(user.role)}>{user.role}</span>
+      <div style={styles.card}>
+        {filteredCourses.length === 0 ? (
+          <p style={styles.noCourses}>
+            {filter === "unfinished"
+              ? "No unfinished courses found 🎯"
+              : "No finished courses yet 🎉"}
+          </p>
+        ) : (
+          <div style={styles.courseGrid}>
+            {filteredCourses.map((course, idx) => (
+              <div
+                key={idx}
+                style={styles.courseCard}
+                onClick={() => navigate(`/subject/${course.subjectName}`)}
+              >
+                <div style={styles.courseHeader}>
+                  <h3 style={styles.courseTitle}>{course.subjectName}</h3>
+                  <span
+                    style={{
+                      ...styles.statusBadge,
+                      background:
+                        course.status === "finished"
+                          ? "linear-gradient(135deg,#22c55e,#15803d)"
+                          : "linear-gradient(135deg,#facc15,#eab308)",
+                    }}
+                  >
+                    {course.status}
+                  </span>
+                </div>
+                <p style={styles.courseDesc}>
+                  {course.status === "finished"
+                    ? "✅ You’ve completed this course!"
+                    : "Continue your learning journey →"}
+                </p>
+                <button style={styles.viewBtn}>Open Course</button>
               </div>
-              <div style={styles.actions}>
-                {user.role !== "superadmin" && (
-                  <>
-                    {user.role === "user" ? (
-                      <button style={styles.promoteBtn} onClick={() => handlePromote(user.email)}>Promote</button>
-                    ) : (
-                      <button style={styles.demoteBtn} onClick={() => handleDemote(user.email)}>Demote</button>
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+        <button
+        style={styles.quizBtn}
+        onClick={() => navigate(`/performance/${subject.name}`)}
+      >
+        📈 View Performance
+      </button>
+
+      </div>
     </div>
   );
 }
 
+/* ---- Styling ---- */
 const styles = {
   page: {
     minHeight: "100vh",
+    background: "radial-gradient(circle at 20% 20%, #0f172a, #020617 70%)",
+    fontFamily: "'Poppins', sans-serif",
     padding: "50px 20px",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    fontFamily: "'Poppins', sans-serif",
-    background: "radial-gradient(circle at 20% 20%, #0f172a, #020617 70%)",
   },
   title: {
     fontSize: "2.5rem",
     fontWeight: "700",
     color: "#f8fafc",
-    marginBottom: "10px",
+    marginBottom: "20px",
     textAlign: "center",
     textShadow: "0 2px 12px rgba(0,0,0,0.6)",
   },
-  note: { color: "#cbd5e1", marginBottom: "20px" },
-  notification: {
-    color: "#ffd700",
-    background: "rgba(255,215,0,0.1)",
-    padding: "10px 15px",
-    borderRadius: "15px",
-    marginBottom: "20px",
-    fontWeight: "500",
-    textAlign: "center",
+  filterContainer: {
+    display: "flex",
+    gap: "20px",
+    marginBottom: "30px",
   },
-  filters: { display: "flex", gap: "15px", marginBottom: "30px", flexWrap: "wrap" },
-  search: {
-    flex: 1,
-    padding: "10px 14px",
-    borderRadius: "12px",
-    border: "1px solid rgba(255,255,255,0.2)",
-    background: "rgba(255,255,255,0.08)",
-    color: "#fef9f3",
-    outline: "none",
+  filterButton: {
+    border: "none",
+    padding: "10px 25px",
+    borderRadius: "30px",
     fontSize: "1rem",
-    backdropFilter: "blur(5px)",
-  },
-  select: {
-    padding: "10px 14px",
-    borderRadius: "12px",
-    border: "1px solid rgba(255,255,255,0.2)",
-    background: "rgba(255,255,255,0.08)",
-    color: "#fef9f3",
-    fontSize: "1rem",
+    fontWeight: "600",
     cursor: "pointer",
+    transition: "all 0.3s ease",
+    backdropFilter: "blur(10px)",
   },
-  userGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-    gap: "25px",
+  card: {
     width: "100%",
-    maxWidth: "1000px",
-  },
-  userCard: {
-    background: "rgba(255,255,255,0.08)",
+    maxWidth: "1100px",
+    background: "rgba(255,255,255,0.05)",
+    padding: "40px",
     borderRadius: "20px",
-    padding: "20px",
+    backdropFilter: "blur(25px)",
+    boxShadow: "0 15px 45px rgba(0,0,0,0.7)",
+    border: "1px solid rgba(255,255,255,0.1)",
+  },
+  courseGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+    gap: "25px",
+  },
+  courseCard: {
+    background: "rgba(255,255,255,0.08)",
+    borderRadius: "18px",
+    padding: "25px 20px",
+    cursor: "pointer",
+    color: "#fff",
+    boxShadow: "0 6px 20px rgba(0,0,0,0.5)",
     display: "flex",
     flexDirection: "column",
     justifyContent: "space-between",
-    boxShadow: "0 15px 45px rgba(0,0,0,0.6)",
-    cursor: "default",
     transition: "transform 0.2s ease",
   },
-  userInfo: { marginBottom: "15px" },
-  userName: { fontSize: "1.2rem", fontWeight: "600", margin: 0, color: "#fef9f3" },
-  userEmail: { color: "#cbd5e1", fontSize: "0.9rem", margin: "5px 0" },
-  roleBadge: (role) => ({
-    display: "inline-block",
+  courseHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "10px",
+  },
+  courseTitle: {
+    fontSize: "1.2rem",
+    fontWeight: "600",
+    margin: 0,
+    color: "#fef9f3",
+  },
+  statusBadge: {
     padding: "6px 12px",
     borderRadius: "12px",
-    fontSize: "0.8rem",
     fontWeight: "600",
+    fontSize: "0.8rem",
     color: "#fff",
     textTransform: "capitalize",
-    background:
-      role === "superadmin"
-        ? "linear-gradient(135deg,#16a34a,#22c55e)"
-        : role === "admin"
-        ? "linear-gradient(135deg,#3b82f6,#60a5fa)"
-        : "linear-gradient(135deg,#64748b,#94a3b8)",
-  }),
-  actions: { display: "flex", gap: "10px" },
-  promoteBtn: {
-    padding: "8px 15px",
-    borderRadius: "20px",
+  },
+  courseDesc: {
+    fontSize: "0.9rem",
+    color: "rgba(255,255,255,0.8)",
+    margin: "10px 0 20px",
+  },
+  viewBtn: {
+    alignSelf: "flex-start",
+    padding: "10px 20px",
+    borderRadius: "25px",
     border: "none",
-    background: "linear-gradient(135deg,#22c55e,#16a34a)",
+    background: "linear-gradient(135deg, #2563eb, #3b82f6)",
     color: "#fff",
     fontWeight: "600",
     cursor: "pointer",
+    transition: "all 0.3s ease",
   },
-  demoteBtn: {
-    padding: "8px 15px",
-    borderRadius: "20px",
-    border: "none",
-    background: "linear-gradient(135deg,#ef4444,#b91c1c)",
+  noCourses: {
     color: "#fff",
-    fontWeight: "600",
-    cursor: "pointer",
+    textAlign: "center",
+    fontSize: "1.1rem",
+    opacity: 0.9,
   },
-  noData: { color: "#fff", textAlign: "center", fontSize: "1.1rem", opacity: 0.9 },
   loadingContainer: {
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
     alignItems: "center",
     height: "100vh",
+    background: "radial-gradient(circle at 30% 40%, #0c111b, #1b2430 80%)",
   },
   spinner: {
     width: "55px",
@@ -280,7 +266,6 @@ const styles = {
   },
 };
 
-// Spinner animation
 const styleSheet = document.createElement("style");
 styleSheet.innerHTML = `
 @keyframes spin {
@@ -289,4 +274,4 @@ styleSheet.innerHTML = `
 }`;
 document.head.appendChild(styleSheet);
 
-export default ManageRoles;
+export default MyCourses;
