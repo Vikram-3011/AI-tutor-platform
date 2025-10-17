@@ -685,6 +685,25 @@ app.get("/api/mycourses/:userEmail", async (req, res) => {
   }
 });
 
+// ✅ Get user performance by subject
+app.get("/api/user/performance/:email/:subjectName", async (req, res) => {
+  try {
+    const { email, subjectName } = req.params;
+
+    const results = await UserQuiz.find(
+      { userEmail: email, subjectName },
+      "topicTitle score attemptedAt"
+    ).sort({ attemptedAt: 1 });
+
+    // Always return array
+    return res.json({ results: results || [] });
+  } catch (err) {
+    console.error("Error fetching user performance:", err);
+    return res.status(500).json({ message: "Failed to fetch performance data" });
+  }
+});
+
+
 
 // ---------------------
 const PORT = process.env.PORT || 5000;

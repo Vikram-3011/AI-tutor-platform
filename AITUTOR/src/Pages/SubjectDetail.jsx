@@ -83,22 +83,26 @@ function SubjectDetail() {
   };
 
   // ✅ Handle Finish Course
-  const handleFinishCourse = async () => {
-    if (!userEmail) return;
-    try {
-      await fetch(`${API_BASE_URL}/api/mycourses/finish`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userEmail,
-          subjectName: subject.name,
-        }),
-      });
-    } catch (err) {
-      console.error(err);
-    }
-    navigate("/explore");
-  };
+  // ✅ Handle Finish Course
+const handleFinishCourse = async () => {
+  if (!userEmail) return;
+  try {
+    await fetch(`${API_BASE_URL}/api/mycourses/finish`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userEmail,
+        subjectName: subject.name,
+      }),
+    });
+
+    // ✅ Redirect to Performance Page after finishing the course
+    navigate(`/explore`);
+  } catch (err) {
+    console.error(err);
+  }
+};
+
 
   const handleTakeQuiz = () => {
     const topic = subject.topics[selectedTopicIndex];

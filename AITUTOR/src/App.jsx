@@ -1,5 +1,13 @@
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 import React, { useEffect, useState } from "react";
+import { supabase } from "./supabaseClient";
 import Home from "./Pages/Home.jsx";
 import SignIn from "./Pages/SignIn.jsx";
 import SignUp from "./Pages/SignUp.jsx";
@@ -9,16 +17,14 @@ import UploadSubject from "./Pages/UploadSubject.jsx";
 import ManageSubjects from "./Pages/ManageSubjects.jsx";
 import EditSubject from "./Pages/EditSubject.jsx";
 import Profile from "./Pages/Profile.jsx";
-import { supabase } from "./supabaseClient";
-import "./App.css";
 import ManageRoles from "./Pages/ManageRoles.jsx";
 import ChatBot from "./Pages/ChatBot.jsx";
-import UploadQuiz from "./Pages/UploadQuiz";
-import AttendQuiz from "./Pages/AttendQuiz";
+import UploadQuiz from "./Pages/UploadQuiz.jsx";
+import AttendQuiz from "./Pages/AttendQuiz.jsx";
 import Landingpage from "./Pages/LandingPage.jsx";
 import ChangePassword from "./Pages/ChangePassword.jsx";
 import Mycourse from "./Pages/MyCourses.jsx";
-
+import performance from "./Pages/SubjectPerformance.jsx";
 import homeIcon from "./assets/home.png";
 import commentIcon from "./assets/comment.png";
 import documentIcon from "./assets/manage.png";
@@ -27,26 +33,28 @@ import plusIcon from "./assets/upload.png";
 import userIcon from "./assets/user-add.png";
 import logo from "./assets/twitch.png";
 import courseIcon from "./assets/learning.png";
+import "./App.css";
 
-// ✅ Sidebar User Avatar Menu
-function UserMenu({ theme, setTheme }) {
+/* ---------- USER MENU ---------- */
+function UserMenu() {
   const [user, setUser] = useState(null);
   const [avatar, setAvatar] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
-
-   const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
+  const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   useEffect(() => {
     const fetchUser = async () => {
-      const { data: { user: supaUser } } = await supabase.auth.getUser();
+      const {
+        data: { user: supaUser },
+      } = await supabase.auth.getUser();
       if (!supaUser) return;
       setUser(supaUser);
 
       const emailEncoded = encodeURIComponent(supaUser.email);
       try {
-       const res = await fetch(`${API_BASE}/api/profile/${emailEncoded}`);
-         if (res.ok) {
+        const res = await fetch(`${API_BASE}/api/profile/${emailEncoded}`);
+        if (res.ok) {
           const data = await res.json();
           if (data.avatar) {
             const base64Avatar = data.avatar.startsWith("data:")
@@ -62,15 +70,15 @@ function UserMenu({ theme, setTheme }) {
     fetchUser();
   }, []);
 
-const handleSignOut = async () => {
-  try {
-    await supabase.auth.signOut();
-    navigate("/signin");
-    window.location.reload(); // ✅ force refresh after navigating
-  } catch (error) {
-    console.error("Error signing out:", error);
-  }
-};
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      navigate("/signin");
+      window.location.reload();
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
 
   const getInitial = () => user?.email?.[0]?.toUpperCase() || "?";
 
@@ -89,7 +97,6 @@ const handleSignOut = async () => {
           <div style={styles.dropdownItem} onClick={() => navigate("/profile")}>
             Profile
           </div>
-         
           <div style={styles.dropdownItem} onClick={handleSignOut}>
             Sign Out
           </div>
@@ -99,68 +106,90 @@ const handleSignOut = async () => {
   );
 }
 
+/* ---------- MAIN APP ---------- */
 function App() {
   const [theme, setTheme] = useState("light");
+  const location = useLocation();
+  const hideSidebarRoutes = ["/landingpage", "/signup", "/signin"];
+  const hideSidebar = hideSidebarRoutes.includes(location.pathname);
 
   useEffect(() => {
     document.body.className = theme;
   }, [theme]);
 
-  return (
-    <Router>
-      <div className="app-container">
-        {/* Sidebar */}
-        <nav className={`sidebar ${theme}`}>
-          <div className="nav-header" >
-  <img src={logo} alt="AI Tutor Logo"  />
-  <h2 className="logo" >AI Tutor</h2>
-</div>
+  // Show all menu items to all logged-in users
+  const navItems = [
+    { path: "/home", label: "Home", icon: homeIcon },
+    { path: "/Explore", label: "Explore", icon: exploreIcon },
+    { path: "/chat", label: "AI Chat", icon: commentIcon },
+    { path: "/my-courses", label: "My Courses", icon: courseIcon },
+    { path: "/upload-subject", label: "Upload", icon: plusIcon },
+    { path: "/manage-subjects", label: "Manage Subjects", icon: documentIcon },
+    { path: "/manage-roles", label: "Manage Roles", icon: userIcon },
+  ];
 
+  return (
+    <div className="app-container">
+      {/* Sidebar - visible for all logged-in users */}
+      {!hideSidebar && (
+        <nav className={`sidebar ${theme}`}>
+          <div className="nav-header">
+            <img src={logo} alt="AI Tutor Logo" />
+            <h2 className="logo">AI Tutor</h2>
+          </div>
 
           <ul className="nav-links">
-            <li><a href="/home">  <img src={homeIcon} alt="Home" className="nav-icon" /><span>Home</span></a></li>
-            <li><a href="/Explore"> <img src={exploreIcon} alt="Home" className="nav-icon" /><span>Explore</span></a></li>
-            <li><a href="/upload-subject"> <img src={plusIcon} alt="Home" className="nav-icon" /><span>Upload</span></a></li>
-            <li><a href="/manage-subjects"> <img src={documentIcon} alt="Home" className="nav-icon" /><span>Manage Subjects</span></a></li>
-            <li><a href="/manage-roles"> <img src={userIcon} alt="Home" className="nav-icon" /><span>Manage Roles</span></a></li>
-            <li><a href="/chat"> <img src={commentIcon} alt="Home" className="nav-icon" /><span>AI Chat</span></a></li>
-            <li><a href="/landingpage"> <img src={commentIcon} alt="Home" className="nav-icon" /><span>landingpage</span></a></li>
-            <li><a href="/my-courses"> <img src={courseIcon} alt="Home" className="nav-icon" /><span>My Courses</span></a></li>
+            {navItems.map((item) => (
+              <li key={item.path}>
+                <a href={item.path}>
+                  <img src={item.icon} alt={item.label} className="nav-icon" />
+                  <span>{item.label}</span>
+                </a>
+              </li>
+            ))}
           </ul>
 
-          {/* Bottom User Menu */}
-          <UserMenu theme={theme} setTheme={setTheme} />
+          <UserMenu />
         </nav>
+      )}
 
-        {/* Main Content */}
-        <div className="main-content">
-          <Routes>
-            
-            <Route path="/landingpage" element={<Landingpage />} />
-            <Route path="/upload-subject" element={<UploadSubject />} />
-            <Route path="/signin" element={<SignIn />} />
-            <Route path="/signup" element={<SignUp />} />
-            <Route path="/home" element={<Home />} />
-            <Route path="/Explore" element={<Explore />} />
-            <Route path="/subject/:name" element={<SubjectDetail />} />
-            <Route path="/" element={<Navigate to="/signup" replace />} />
-            <Route path="/manage-subjects" element={<ManageSubjects />} />
-            <Route path="/edit-subject/:id" element={<EditSubject />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/manage-roles" element={<ManageRoles />} />
-            <Route path="/chat" element={<ChatBot />} />
-            <Route path="/upload-quiz/:subjectName/:topicTitle" element={<UploadQuiz />} />
-            <Route path="/take-quiz/:subjectName/:topicTitle" element={<AttendQuiz />} />
-            <Route path="/change-password" element={<ChangePassword />} />
-            <Route path="/my-courses" element={<Mycourse />} />
-          </Routes>
-        </div>
+      {/* Main content */}
+      <div className="main-content" style={{ marginLeft: hideSidebar ? "0" : "" }}>
+        <Routes>
+          <Route path="/" element={<Navigate to="/landingpage" replace />} />
+          <Route path="/landingpage" element={<Landingpage />} />
+          <Route path="/signin" element={<SignIn />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/home" element={<Home />} />
+          <Route path="/Explore" element={<Explore />} />
+          <Route path="/subject/:name" element={<SubjectDetail />} />
+          <Route path="/upload-subject" element={<UploadSubject />} />
+          <Route path="/manage-subjects" element={<ManageSubjects />} />
+          <Route path="/edit-subject/:id" element={<EditSubject />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/manage-roles" element={<ManageRoles />} />
+          <Route path="/chat" element={<ChatBot />} />
+          <Route path="/upload-quiz/:subjectName/:topicTitle" element={<UploadQuiz />} />
+          <Route path="/take-quiz/:subjectName/:topicTitle" element={<AttendQuiz />} />
+          <Route path="/change-password" element={<ChangePassword />} />
+          <Route path="/my-courses" element={<Mycourse />} />
+          <Route path="/performance/:subjectName" element={<performance />} />
+        </Routes>
       </div>
+    </div>
+  );
+}
+
+/* ---------- WRAPPER ---------- */
+export default function AppWrapper() {
+  return (
+    <Router>
+      <App />
     </Router>
   );
 }
 
-/* --- STYLES --- */
+/* ---------- STYLES ---------- */
 const styles = {
   userMenuContainer: {
     marginTop: "auto",
@@ -218,8 +247,4 @@ const styles = {
     cursor: "pointer",
     borderBottom: "1px solid rgba(255,255,255,0.1)",
   },
-  
-  
 };
-
-export default App;

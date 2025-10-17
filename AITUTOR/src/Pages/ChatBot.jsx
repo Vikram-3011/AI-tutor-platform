@@ -6,40 +6,56 @@ function ChatBot() {
   const [loading, setLoading] = useState(false);
   const chatEndRef = useRef(null);
 
-  const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
-
+  // Scroll to latest message
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // Hardcoded responses
+  const responses = {
+    "about java":
+      "☕ Java is a high-level, object-oriented programming language developed by Sun Microsystems. It is platform-independent thanks to the JVM (Java Virtual Machine).",
+    "about python":
+      "🐍 Python is a versatile, beginner-friendly programming language known for its readability and wide use in AI, web development, and automation.",
+    "about html":
+      "🌐 HTML (HyperText Markup Language) is the standard language for creating web pages and structuring web content.",
+    "about css":
+      "🎨 CSS (Cascading Style Sheets) is used to style and design web pages — controlling colors, layouts, and fonts.",
+    "about javascript":
+      "⚡ JavaScript is a scripting language used to make web pages interactive. It runs in browsers and on servers using Node.js.",
+    "about c++":
+      "💻 C++ is a powerful programming language often used for system software, game engines, and performance-critical applications.",
+    "about computer":
+      "🖥️ A computer is an electronic device that processes data according to a set of instructions (programs) to produce meaningful output.",
+    "about ai":
+      "🤖 Artificial Intelligence (AI) enables machines to mimic human intelligence, such as learning, reasoning, and decision-making.",
+  };
+
   const sendMessage = async () => {
     if (!input.trim()) return;
 
+    const userMessage = input.trim().toLowerCase();
     const newMessage = { sender: "user", text: input };
     setMessages((prev) => [...prev, newMessage]);
     setInput("");
     setLoading(true);
 
-    try {
-      const res = await fetch(`${API_BASE}/api/chat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: input }),
-      });
-      const data = await res.json();
-      setMessages((prev) => [
-        ...prev,
-        { sender: "ai", text: data.reply || "Sorry, I couldn't understand that." },
-      ]);
-    } catch (err) {
-      console.error(err);
-      setMessages((prev) => [
-        ...prev,
-        { sender: "ai", text: "⚠️ Error connecting to server." },
-      ]);
-    } finally {
-      setLoading(false);
-    }
+    // Simulate AI typing delay
+    setTimeout(() => {
+      if (responses[userMessage]) {
+        setMessages((prev) => [
+          ...prev,
+          { sender: "ai", text: responses[userMessage] },
+        ]);
+        setLoading(false);
+      } else {
+        // Unknown input → stays in loading state forever
+        setMessages((prev) => [
+          ...prev,
+          { sender: "ai", text: "" },
+        ]);
+      }
+    }, 1000);
   };
 
   return (
@@ -53,29 +69,35 @@ function ChatBot() {
               key={idx}
               style={msg.sender === "user" ? styles.userCard : styles.aiCard}
             >
-              {msg.text}
+              {msg.text || (loading && idx === messages.length - 1 ? "AI is typing..." : "")}
             </div>
           ))}
-          {loading && <div style={styles.loadingText}>AI is typing...</div>}
+
+          {loading && (
+            <div style={styles.loadingText}></div>
+          )}
           <div ref={chatEndRef} />
         </div>
 
         <div style={styles.inputArea}>
           <input
             type="text"
-            placeholder="Type a message..."
+            placeholder="Ask something like 'about java'..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && sendMessage()}
             style={styles.input}
           />
-          <button onClick={sendMessage} style={styles.sendBtn}>Send</button>
+          <button onClick={sendMessage} style={styles.sendBtn}>
+            Send
+          </button>
         </div>
       </div>
     </div>
   );
 }
 
+// 💅 Styling (same as before)
 const styles = {
   page: {
     minHeight: "100vh",
