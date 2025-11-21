@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { API_BASE_URL } from "../config";
-import { supabase } from "../supabaseClient"; 
+import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
 
 function ManageRoles() {
@@ -90,41 +90,42 @@ function ManageRoles() {
 
   if (loading)
     return (
-      <div style={styles.page}>
-        <h2 style={{ color: "#ccc" }}>Loading users...</h2>
+      <div style={styles.loadingPage}>
+        <div style={styles.spinner}></div>
+        <p style={styles.loadingText}>Loading Users...</p>
       </div>
     );
 
   return (
     <div style={styles.page}>
-      <div style={styles.container}>
-        <h1 style={styles.title}>⚙️ Role Management</h1>
-        <p style={styles.note}>Only Super Admin can access this page.</p>
+      <div style={styles.wrapper}>
+        <h1 style={styles.title}>Role Management</h1>
+        <p style={styles.subtitle}>Manage user roles • Super Admin Only</p>
 
         {message && <div style={styles.notification}>{message}</div>}
 
         <div style={styles.filters}>
           <input
             type="text"
-            placeholder="Search by email..."
+            placeholder="🔍 Search users..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             style={styles.search}
           />
-         <select
-  value={filterRole}
-  onChange={(e) => setFilterRole(e.target.value)}
-  style={styles.select}
->
-  <option value="all" style={styles.option}>All Roles</option>
-  <option value="user" style={styles.option}>User</option>
-  <option value="admin" style={styles.option}>Admin</option>
-  <option value="superadmin" style={styles.option}>Superadmin</option>
-</select>
 
+          <select
+            value={filterRole}
+            onChange={(e) => setFilterRole(e.target.value)}
+            style={styles.select}
+          >
+            <option value="all">All Roles</option>
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+            <option value="superadmin">Super Admin</option>
+          </select>
         </div>
 
-        <div style={styles.tableWrapper}>
+        <div style={styles.tableContainer}>
           <table style={styles.table}>
             <thead>
               <tr>
@@ -134,6 +135,7 @@ function ManageRoles() {
                 <th style={styles.th}>Actions</th>
               </tr>
             </thead>
+
             <tbody>
               {filteredUsers.length ? (
                 filteredUsers.map((user) => (
@@ -141,21 +143,21 @@ function ManageRoles() {
                     <td style={styles.td}>{user.name || "Unnamed User"}</td>
                     <td style={styles.td}>{user.email}</td>
                     <td style={styles.td}>
-                      <span style={styles.role(user.role)}>{user.role}</span>
+                      <span style={styles.roleBadge(user.role)}>{user.role}</span>
                     </td>
                     <td style={styles.td}>
                       {user.role !== "superadmin" && (
                         <>
                           {user.role === "user" ? (
                             <button
-                              style={styles.promoteBtn}
+                              style={styles.promote}
                               onClick={() => handlePromote(user.email)}
                             >
                               Promote
                             </button>
                           ) : (
                             <button
-                              style={styles.demoteBtn}
+                              style={styles.demote}
                               onClick={() => handleDemote(user.email)}
                             >
                               Demote
@@ -168,8 +170,8 @@ function ManageRoles() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="4" style={styles.noData}>
-                    No users found
+                  <td style={styles.noData} colSpan="4">
+                    No users found.
                   </td>
                 </tr>
               )}
@@ -181,142 +183,188 @@ function ManageRoles() {
   );
 }
 
+/* ------------------------------ */
+/* EXPLORE PAGE STYLE UI */
+/* ------------------------------ */
+
 const styles = {
   page: {
     minHeight: "100vh",
-    background: "linear-gradient(135deg, #0c111b, #1b2430)",
+    padding: "60px 20px",
+    background: "radial-gradient(circle at 25% 20%, #0f172a, #020617 80%)",
     display: "flex",
     justifyContent: "center",
-    padding: "40px 20px",
     fontFamily: "'Poppins', sans-serif",
   },
-  container: {
+
+  wrapper: {
     width: "100%",
-    maxWidth: "900px",
+    maxWidth: "1100px",
     background: "rgba(255,255,255,0.05)",
-    padding: "30px",
-    borderRadius: "20px",
+    borderRadius: "25px",
+    padding: "35px",
     backdropFilter: "blur(15px)",
-    boxShadow: "0 15px 35px rgba(0,0,0,0.6)",
     border: "1px solid rgba(255,255,255,0.15)",
+    boxShadow: "0 20px 40px rgba(0,0,0,0.4)",
   },
+
   title: {
-    fontSize: "2rem",
-    color: "#fef9f3",
+    fontSize: "2.8rem",
     fontWeight: "700",
     textAlign: "center",
-    marginBottom: "10px",
+    background: "linear-gradient(90deg, #facc15, #fde047)",
+    WebkitTextFillColor: "transparent",
+    WebkitBackgroundClip: "text",
   },
-  note: {
+
+  subtitle: {
     textAlign: "center",
-    color: "#9ca3af",
-    marginBottom: "20px",
+    color: "#cbd5e1",
+    marginBottom: "25px",
+    fontSize: "1.1rem",
   },
+
   notification: {
-    color: "#ffd700",
-    background: "rgba(255,215,0,0.1)",
-    padding: "8px 12px",
-    borderRadius: "10px",
+    padding: "12px",
+    background: "rgba(255,215,0,0.15)",
+    borderRadius: "12px",
+    color: "#fde047",
     textAlign: "center",
-    marginBottom: "15px",
-    fontWeight: "500",
+    marginBottom: "20px",
+    fontWeight: "600",
   },
+
   filters: {
     display: "flex",
     gap: "15px",
-    marginBottom: "20px",
+    marginBottom: "25px",
     flexWrap: "wrap",
   },
+
   search: {
     flex: 1,
-    padding: "10px 14px",
-    borderRadius: "12px",
-    border: "1px solid rgba(255,255,255,0.2)",
+    padding: "14px 18px",
+    borderRadius: "14px",
     background: "rgba(255,255,255,0.08)",
-    color: "#fef9f3",
+    border: "none",
+    color: "#fff",
     outline: "none",
     fontSize: "1rem",
-    backdropFilter: "blur(5px)",
+    backdropFilter: "blur(10px)",
+    boxShadow: "inset 0 2px 8px rgba(0,0,0,0.4)",
   },
- select: {
-  padding: "10px 14px",
-  borderRadius: "12px",
-  border: "1px solid rgba(255,255,255,0.2)",
-  background: "rgba(255,255,255,0.08)",
-  color: "#fef9f3",
-  outline: "none",
-  fontSize: "1rem",
-  cursor: "pointer",
-  // Force dropdown text to be visible
-  appearance: "none",
-  WebkitAppearance: "none",
-  MozAppearance: "none",
-},
-option: {
-  backgroundColor: "#1b2430", // dark background
-  color: "#fef9f3",           // light text
-  padding: "8px 12px",
-},
 
+  select: {
+    padding: "14px 18px",
+    borderRadius: "14px",
+    background: "rgba(255,255,255,0.08)",
+    border: "none",
+    color: "#3675eaff",
+    outline: "none",
+    fontSize: "1rem",
+    cursor: "pointer",
+  },
 
-tableWrapper: { overflowX: "auto" },
-  table: { width: "100%", borderCollapse: "collapse" },
+  tableContainer: {
+    overflowX: "auto",
+  },
+
+  table: {
+    width: "100%",
+    borderCollapse: "collapse",
+  },
+
   th: {
     textAlign: "left",
-    padding: "12px 15px",
-    color: "#fef9f3",
-    borderBottom: "2px solid rgba(255,255,255,0.2)",
+    padding: "14px",
+    color: "#f1f5f9",
+    fontSize: "1rem",
+    borderBottom: "1px solid rgba(255,255,255,0.2)",
+  },
+
+  row: {
+    borderBottom: "1px solid rgba(255,255,255,0.08)",
+  },
+
+  td: {
+    padding: "14px",
+    color: "#e2e8f0",
     fontSize: "0.95rem",
   },
-  row: {
-    borderBottom: "1px solid rgba(255,255,255,0.1)",
-    transition: "background 0.3s",
-  },
-  td: {
-    padding: "12px 15px",
-    color: "#f1f5f9",
-    fontSize: "0.9rem",
-  },
-  role: (role) => ({
-    display: "inline-block",
-    padding: "4px 10px",
-    borderRadius: "6px",
-    fontSize: "0.8rem",
+
+  roleBadge: (role) => ({
+    padding: "6px 14px",
+    borderRadius: "20px",
+    color: "#fff",
     textTransform: "capitalize",
+    fontSize: "0.8rem",
     background:
       role === "superadmin"
-        ? "#16a34a"
+        ? "linear-gradient(90deg, #16a34a, #22c55e)"
         : role === "admin"
-        ? "#3b82f6"
-        : "#64748b",
-    color: "#fff",
+        ? "linear-gradient(90deg, #2563eb, #3b82f6)"
+        : "linear-gradient(90deg, #64748b, #94a3b8)",
   }),
-  promoteBtn: {
-    background: "#22c55e",
+
+  promote: {
+    padding: "8px 14px",
+    background: "linear-gradient(90deg, #22c55e, #16a34a)",
     border: "none",
-    padding: "6px 12px",
-    borderRadius: "8px",
-    cursor: "pointer",
+    borderRadius: "12px",
     color: "#fff",
-    fontWeight: "500",
-    marginRight: "5px",
-    transition: "all 0.2s",
+    fontWeight: "600",
+    cursor: "pointer",
+    marginRight: "8px",
   },
-  demoteBtn: {
-    background: "#ef4444",
+
+  demote: {
+    padding: "8px 14px",
+    background: "linear-gradient(90deg, #ef4444, #b91c1c)",
     border: "none",
-    padding: "6px 12px",
-    borderRadius: "8px",
-    cursor: "pointer",
+    borderRadius: "12px",
     color: "#fff",
-    fontWeight: "500",
-    transition: "all 0.2s",
+    fontWeight: "600",
+    cursor: "pointer",
   },
+
   noData: {
     textAlign: "center",
-    padding: "15px",
+    padding: "20px",
     color: "#f87171",
   },
+
+  loadingPage: {
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    height: "100vh",
+    background: "#020617",
+  },
+
+  spinner: {
+    width: "50px",
+    height: "50px",
+    border: "5px solid rgba(255,255,255,0.2)",
+    borderTop: "5px solid #3b82f6",
+    borderRadius: "50%",
+    animation: "spin 1s linear infinite",
+  },
+
+  loadingText: {
+    marginTop: "15px",
+    color: "#fff",
+    fontSize: "1.1rem",
+  },
 };
+
+// Inject animation
+const styleSheet = document.createElement("style");
+styleSheet.innerHTML = `
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}`;
+document.head.appendChild(styleSheet);
 
 export default ManageRoles;

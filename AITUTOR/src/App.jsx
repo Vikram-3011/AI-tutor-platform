@@ -24,16 +24,19 @@ import AttendQuiz from "./Pages/AttendQuiz.jsx";
 import Landingpage from "./Pages/LandingPage.jsx";
 import ChangePassword from "./Pages/ChangePassword.jsx";
 import Mycourse from "./Pages/MyCourses.jsx";
-import performance from "./Pages/SubjectPerformance.jsx";
+// import performance from "./Pages/SubjectPerformance.jsx";
 import homeIcon from "./assets/home.png";
 import commentIcon from "./assets/comment.png";
 import documentIcon from "./assets/manage.png";
 import exploreIcon from "./assets/globe.png";
 import plusIcon from "./assets/upload.png";
 import userIcon from "./assets/user-add.png";
-import logo from "./assets/twitch.png";
+import logo from "./assets/circle.png";
 import courseIcon from "./assets/learning.png";
 import "./App.css";
+import PerformancePage from "./Pages/PerformancePage.jsx";
+import Contact from "./Pages/contact.jsx";
+import ProtectedRoute from "./ProtectedRoute";
 
 /* ---------- USER MENU ---------- */
 function UserMenu() {
@@ -110,7 +113,7 @@ function UserMenu() {
 function App() {
   const [theme, setTheme] = useState("light");
   const location = useLocation();
-  const hideSidebarRoutes = ["/landingpage", "/signup", "/signin"];
+  const hideSidebarRoutes = ["/landingpage", "/signup", "/signin", "/contact"];
   const hideSidebar = hideSidebarRoutes.includes(location.pathname);
 
   useEffect(() => {
@@ -134,8 +137,8 @@ function App() {
       {!hideSidebar && (
         <nav className={`sidebar ${theme}`}>
           <div className="nav-header">
-            <img src={logo} alt="AI Tutor Logo" />
-            <h2 className="logo">AI Tutor</h2>
+            <img src={logo} alt="RitLens Logo" />
+            <h2 className="logo">RitLens</h2>
           </div>
 
           <ul className="nav-links">
@@ -155,25 +158,28 @@ function App() {
 
       {/* Main content */}
       <div className="main-content" style={{ marginLeft: hideSidebar ? "0" : "" }}>
+        
         <Routes>
           <Route path="/" element={<Navigate to="/landingpage" replace />} />
           <Route path="/landingpage" element={<Landingpage />} />
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/Explore" element={<Explore />} />
-          <Route path="/subject/:name" element={<SubjectDetail />} />
-          <Route path="/upload-subject" element={<UploadSubject />} />
-          <Route path="/manage-subjects" element={<ManageSubjects />} />
-          <Route path="/edit-subject/:id" element={<EditSubject />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/manage-roles" element={<ManageRoles />} />
-          <Route path="/chat" element={<ChatBot />} />
+          <Route path="/home" element={ <ProtectedRoute> <Home /> </ProtectedRoute>} />
+          <Route path="/Explore" element={<ProtectedRoute><Explore /></ProtectedRoute>} />
+          <Route path="/subject/:name" element={<ProtectedRoute><SubjectDetail /></ProtectedRoute>} />
+          <Route path="/upload-subject" element={<ProtectedRoute><UploadSubject /></ProtectedRoute>} />
+          <Route path="/manage-subjects" element={ <ProtectedRoute><ManageSubjects /></ProtectedRoute>} />
+          <Route path="/edit-subject/:id" element={<ProtectedRoute><EditSubject /></ProtectedRoute> } />
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/manage-roles" element={<ProtectedRoute><ManageRoles /></ProtectedRoute>} />
+          <Route path="/chat" element={<ProtectedRoute><ChatBot /></ProtectedRoute>} />
           <Route path="/upload-quiz/:subjectName/:topicTitle" element={<UploadQuiz />} />
           <Route path="/take-quiz/:subjectName/:topicTitle" element={<AttendQuiz />} />
-          <Route path="/change-password" element={<ChangePassword />} />
-          <Route path="/my-courses" element={<Mycourse />} />
-          <Route path="/performance/:subjectName" element={<performance />} />
+          <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
+          <Route path="/my-courses" element={<ProtectedRoute><Mycourse /></ProtectedRoute>} />
+          <Route path="/performance" element={<ProtectedRoute><PerformancePage /></ProtectedRoute>} />
+          <Route path="/contact" element={<Contact />} />
+
         </Routes>
       </div>
     </div>
@@ -181,10 +187,14 @@ function App() {
 }
 
 /* ---------- WRAPPER ---------- */
+import { AuthProvider } from "./AuthContext";
+
 export default function AppWrapper() {
   return (
     <Router>
-      <App />
+      <AuthProvider>
+        <App />
+      </AuthProvider>
     </Router>
   );
 }

@@ -14,68 +14,62 @@ function ChatBot() {
   // Hardcoded responses
   const responses = {
     "about java":
-      "☕ Java is a high-level, object-oriented programming language developed by Sun Microsystems. It is platform-independent thanks to the JVM (Java Virtual Machine).",
+      "☕ Java is a high-level, object-oriented language known for platform independence.",
     "about python":
-      "🐍 Python is a versatile, beginner-friendly programming language known for its readability and wide use in AI, web development, and automation.",
+      "🐍 Python is a powerful, beginner-friendly language widely used in AI and automation.",
     "about html":
-      "🌐 HTML (HyperText Markup Language) is the standard language for creating web pages and structuring web content.",
+      "🌐 HTML structures web pages and defines website content.",
     "about css":
-      "🎨 CSS (Cascading Style Sheets) is used to style and design web pages — controlling colors, layouts, and fonts.",
+      "🎨 CSS styles and designs websites — layouts, colors, animations.",
     "about javascript":
-      "⚡ JavaScript is a scripting language used to make web pages interactive. It runs in browsers and on servers using Node.js.",
+      "⚡ JavaScript makes websites interactive and dynamic.",
     "about c++":
-      "💻 C++ is a powerful programming language often used for system software, game engines, and performance-critical applications.",
-    "about computer":
-      "🖥️ A computer is an electronic device that processes data according to a set of instructions (programs) to produce meaningful output.",
+      "💻 C++ is used for high-performance apps, game engines, and system software.",
     "about ai":
-      "🤖 Artificial Intelligence (AI) enables machines to mimic human intelligence, such as learning, reasoning, and decision-making.",
+      "🤖 AI allows machines to learn and make decisions similar to humans.",
   };
 
-  const sendMessage = async () => {
+  const sendMessage = () => {
     if (!input.trim()) return;
 
-    const userMessage = input.trim().toLowerCase();
-    const newMessage = { sender: "user", text: input };
-    setMessages((prev) => [...prev, newMessage]);
+    const userMsg = input.trim().toLowerCase();
+    setMessages((prev) => [...prev, { sender: "user", text: input }]);
     setInput("");
     setLoading(true);
 
-    // Simulate AI typing delay
     setTimeout(() => {
-      if (responses[userMessage]) {
-        setMessages((prev) => [
-          ...prev,
-          { sender: "ai", text: responses[userMessage] },
-        ]);
-        setLoading(false);
-      } else {
-        // Unknown input → stays in loading state forever
-        setMessages((prev) => [
-          ...prev,
-          { sender: "ai", text: "" },
-        ]);
-      }
-    }, 1000);
+      setMessages((prev) => [
+        ...prev,
+        {
+          sender: "ai",
+          text:
+            responses[userMsg] ||
+            "I'm still learning! Please try asking something like 'about java'.",
+        },
+      ]);
+      setLoading(false);
+    }, 800);
   };
 
   return (
     <div style={styles.page}>
-      <div style={styles.chatContainer}>
-        <h2 style={styles.header}>🤖 AI Tutor Chat</h2>
+      <div style={styles.card}>
+        <h2 style={styles.title}> AI Chat Bot</h2>
 
         <div style={styles.chatBox}>
           {messages.map((msg, idx) => (
             <div
               key={idx}
-              style={msg.sender === "user" ? styles.userCard : styles.aiCard}
+              style={msg.sender === "user" ? styles.userMsg : styles.aiMsg}
             >
-              {msg.text || (loading && idx === messages.length - 1 ? "AI is typing..." : "")}
+              {msg.text}
             </div>
           ))}
 
           {loading && (
-            <div style={styles.loadingText}></div>
+            <div style={styles.aiMsg}>AI is typing…</div>
           )}
+
           <div ref={chatEndRef} />
         </div>
 
@@ -88,7 +82,7 @@ function ChatBot() {
             onKeyDown={(e) => e.key === "Enter" && sendMessage()}
             style={styles.input}
           />
-          <button onClick={sendMessage} style={styles.sendBtn}>
+          <button onClick={sendMessage} style={styles.button}>
             Send
           </button>
         </div>
@@ -97,79 +91,79 @@ function ChatBot() {
   );
 }
 
-// 💅 Styling (same as before)
+// 🔥 Styling copied to match Explore page theme
 const styles = {
   page: {
     minHeight: "100vh",
     width: "100vw",
-    background: "linear-gradient(135deg, #0c111b, #1b2430)",
+    background: "radial-gradient(circle at 20% 20%, #0f172a, #020617 70%)",
     display: "flex",
-    alignItems: "center",
     justifyContent: "center",
+    alignItems: "center",
+    padding: "40px",
     fontFamily: "'Poppins', sans-serif",
-    padding: "20px",
+    color: "#fff",
   },
-  chatContainer: {
+
+  card: {
     width: "100%",
-    maxWidth: "600px",
+    maxWidth: "700px",
     height: "80vh",
     background: "rgba(255,255,255,0.05)",
+    backdropFilter: "blur(20px)",
     borderRadius: "20px",
+    border: "1px solid rgba(255,255,255,0.1)",
+    boxShadow: "0 15px 40px rgba(0,0,0,0.5)",
     padding: "25px",
     display: "flex",
     flexDirection: "column",
-    backdropFilter: "blur(15px)",
-    border: "1px solid rgba(255,255,255,0.1)",
-    boxShadow: "0 8px 25px rgba(0,0,0,0.5)",
   },
-  header: {
-    fontSize: "1.8rem",
-    fontWeight: "600",
-    color: "#ffd700",
-    marginBottom: "20px",
+
+  title: {
     textAlign: "center",
-    textShadow: "0 1px 8px rgba(0,0,0,0.4)",
+    fontSize: "2rem",
+    fontWeight: "600",
+    marginBottom: "20px",
+    background: "linear-gradient(90deg, #2563eb, #60a5fa)",
+    WebkitBackgroundClip: "text",
+    WebkitTextFillColor: "transparent",
   },
+
   chatBox: {
     flex: 1,
     overflowY: "auto",
     display: "flex",
     flexDirection: "column",
     gap: "12px",
-    marginBottom: "15px",
+    padding: "10px",
   },
-  userCard: {
+
+  userMsg: {
     alignSelf: "flex-end",
-    background: "rgba(255,255,255,0.07)",
-    color: "#fff",
-    padding: "12px 18px",
+    background: "rgba(59,130,246,0.4)",
+    padding: "12px 15px",
     borderRadius: "15px 15px 0 15px",
     maxWidth: "75%",
-    backdropFilter: "blur(10px)",
-    border: "1px solid rgba(255,255,255,0.15)",
-    boxShadow: "0 6px 15px rgba(0,0,0,0.3)",
+    backdropFilter: "blur(5px)",
+    border: "1px solid rgba(255,255,255,0.1)",
   },
-  aiCard: {
+
+  aiMsg: {
     alignSelf: "flex-start",
-    background: "rgba(255,255,255,0.08)",
-    color: "#fff",
-    padding: "12px 18px",
+    background: "rgba(255,255,255,0.12)",
+    padding: "12px 15px",
     borderRadius: "15px 15px 15px 0",
     maxWidth: "75%",
-    backdropFilter: "blur(10px)",
-    border: "1px solid rgba(255,255,255,0.12)",
-    boxShadow: "0 6px 15px rgba(0,0,0,0.25)",
+    backdropFilter: "blur(8px)",
+    border: "1px solid rgba(255,255,255,0.1)",
   },
-  loadingText: {
-    fontStyle: "italic",
-    color: "#ccc",
-    fontSize: "0.9rem",
-    paddingLeft: "10px",
-  },
+
   inputArea: {
     display: "flex",
     gap: "10px",
+    marginTop: "10px",
   },
+
   input: {
     flex: 1,
     padding: "12px 15px",
@@ -180,15 +174,16 @@ const styles = {
     color: "#fff",
     fontSize: "1rem",
   },
-  sendBtn: {
-    background: "#ffd700",
-    color: "#0c111b",
-    border: "none",
-    borderRadius: "25px",
+
+  button: {
     padding: "12px 20px",
+    borderRadius: "25px",
+    border: "none",
+    background: "linear-gradient(90deg, #2563eb, #3b82f6)",
+    color: "#fff",
     fontWeight: "600",
     cursor: "pointer",
-    transition: "all 0.3s ease",
+    transition: "0.3s",
   },
 };
 
