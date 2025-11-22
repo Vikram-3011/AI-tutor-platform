@@ -82,27 +82,27 @@ function SubjectDetail() {
     }
   };
 
-  // ✅ Handle Finish Course
-  // ✅ Handle Finish Course
-const handleFinishCourse = async () => {
-  if (!userEmail) return;
-  try {
-    await fetch(`${API_BASE_URL}/api/mycourses/finish`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        userEmail,
-        subjectName: subject.name,
-      }),
-    });
+  // ✅ Handle Finish Course (UPDATED LOGIC)
+  const handleFinishCourse = async () => {
+    if (!userEmail) return;
+    try {
+      await fetch(`${API_BASE_URL}/api/mycourses/finish`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userEmail,
+          subjectName: subject.name,
+        }),
+      });
 
-    // ✅ Redirect to Performance Page after finishing the course
-    navigate(`/explore`);
-  } catch (err) {
-    console.error(err);
-  }
-};
+      // 🔄 CHANGE: Redirect to Performance Page with state
+      // This passes the subject name so the Performance page loads this subject's graph immediately
+      navigate(`/performance`, { state: { subjectName: subject.name } });
 
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const handleTakeQuiz = () => {
     const topic = subject.topics[selectedTopicIndex];

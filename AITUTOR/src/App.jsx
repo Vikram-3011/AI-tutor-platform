@@ -173,7 +173,7 @@ function App() {
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/manage-roles" element={<ProtectedRoute><ManageRoles /></ProtectedRoute>} />
           <Route path="/chat" element={<ProtectedRoute><ChatBot /></ProtectedRoute>} />
-          <Route path="/upload-quiz/:subjectName/:topicTitle" element={<UploadQuiz />} />
+          <Route path="/upload-quiz" element={<UploadQuiz />} />
           <Route path="/take-quiz/:subjectName/:topicTitle" element={<AttendQuiz />} />
           <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
           <Route path="/my-courses" element={<ProtectedRoute><Mycourse /></ProtectedRoute>} />

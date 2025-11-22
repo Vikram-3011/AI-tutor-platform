@@ -57,6 +57,14 @@ function ManageSubjects() {
         <p style={styles.subtitle}>Edit or remove subjects you have created.</p>
       </header>
 
+      <button 
+          style={styles.addQuizBtn} 
+          onClick={() => navigate("/upload-quiz")}
+        >
+          ➕ Add Quiz
+        </button>
+
+      
       <input
         type="text"
         placeholder="🔍 Search subjects..."
@@ -98,6 +106,8 @@ function ManageSubjects() {
         )}
       </div>
     </div>
+
+    
   );
 }
 
@@ -249,6 +259,21 @@ const styles = {
     color: "#fff",
     fontSize: "1.1rem",
   },
+  addQuizBtn: {
+    background: "linear-gradient(90deg, #10b981, #34d399)", // Green gradient
+    color: "#0f172a",
+    border: "none",
+    padding: "12px 24px",
+    borderRadius: "30px",
+    fontWeight: "700",
+    fontSize: "1rem",
+    cursor: "pointer",
+    boxShadow: "0 4px 15px rgba(16, 185, 129, 0.4)",
+    transition: "transform 0.2s",
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+  }
 };
 
 // Inject keyframes

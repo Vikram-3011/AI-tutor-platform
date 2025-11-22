@@ -26,8 +26,9 @@ function UploadSubject() {
   const [showDialog, setShowDialog] = useState(false);
   const [message, setMessage] = useState("");
 
-  // Existing functions untouched...
+  // --- LOGIC SECTION START ---
 
+  // 1. Manual Add Example
   const addExample = () => {
     if (!exampleDescription || !exampleCode) return setMessage("⚠️ Fill both example fields.");
     setExamples([...examples, { description: exampleDescription, code: exampleCode }]);
@@ -36,12 +37,21 @@ function UploadSubject() {
     setMessage("✅ Example added!");
   };
 
+  // 2. Save Examples (Auto-adds pending input)
   const saveExamples = () => {
-    if (examples.length === 0) return setMessage("⚠️ Add at least one example first.");
+    let finalExamples = [...examples];
+    if (exampleDescription && exampleCode) {
+        finalExamples.push({ description: exampleDescription, code: exampleCode });
+        setExamples(finalExamples);
+        setExampleDescription("");
+        setExampleCode("");
+    }
+    if (finalExamples.length === 0) return setMessage("⚠️ Add at least one example first.");
     setIsExampleSaved(true);
     setMessage("✅ Examples saved.");
   };
 
+  // 3. Manual Add Topic
   const addTopic = () => {
     if (!topicTitle || !topicContent) return setMessage("⚠️ Fill topic title & content.");
     if (!isExampleSaved || examples.length === 0) return setMessage("⚠️ Save examples first.");
@@ -54,10 +64,60 @@ function UploadSubject() {
     setMessage("✅ Topic saved!");
   };
 
+  // 4. NEW: Handle Next Button (Auto-processes Topic + Example)
+  const handleNextToFinalize = () => {
+    // Capture current state locally
+    let currentTopics = [...topics];
+    let currentExamples = [...examples];
+
+    // A. Check if there is a pending Example in inputs
+    if (exampleDescription && exampleCode) {
+      currentExamples.push({ description: exampleDescription, code: exampleCode });
+    }
+
+    // B. Check if there is a pending Topic in inputs
+    if (topicTitle && topicContent) {
+      // Validate: Does this pending topic have examples (either in array or just added)?
+      if (currentExamples.length === 0) {
+        return setMessage("⚠️ Please add at least one example for the current topic.");
+      }
+
+      // Create the new topic object
+      const newTopic = {
+        title: topicTitle,
+        content: topicContent,
+        examples: currentExamples
+      };
+
+      // Add it to the list
+      currentTopics.push(newTopic);
+      setIsTopicSaved(true); // Mark valid
+    }
+
+    // C. Final Check: Do we have any topics to proceed?
+    if (currentTopics.length === 0) {
+      return setMessage("⚠️ You must add at least one topic before finalizing.");
+    }
+
+    // D. Update State and Move Next
+    setTopics(currentTopics);
+    
+    // Clear current inputs so they don't linger
+    setTopicTitle("");
+    setTopicContent("");
+    setExamples([]);
+    setExampleDescription("");
+    setExampleCode("");
+    
+    setStep(4);
+  };
+
+  // --- LOGIC SECTION END ---
+
   const finalizeSubject = () => {
     if (!name || !overview || !whyLearn || !purpose || topics.length === 0)
       return setMessage("⚠️ Complete all fields & add at least one topic.");
-    if (!isTopicSaved) return setMessage("⚠️ Save your last topic first.");
+    // isTopicSaved check removed here because handleNextToFinalize ensures topics exist
     setFinalizeMode(true);
     setMessage("✅ Ready to upload!");
   };
@@ -248,27 +308,16 @@ function UploadSubject() {
                 <button style={styles.primaryBtn} onClick={addTopic}>
                   Add Topic
                 </button>
-
-                <button
-                  style={styles.primaryBtn}
-                  onClick={() => {
-                    if (!topicTitle)
-                      return alert("Save topic first!");
-                    navigate(`/upload-quiz/${name}/${topicTitle}`);
-                  }}
-                >
-                  ➕ Add Quiz
-                </button>
               </div>
 
               <div style={styles.rowBtns}>
                 <button style={styles.secondaryBtn} onClick={() => setStep(2)}>
                   ← Back
                 </button>
+                {/* CHANGED: Button now calls handleNextToFinalize and isn't disabled by empty topics list */}
                 <button
                   style={styles.primaryBtn}
-                  disabled={topics.length === 0}
-                  onClick={() => setStep(4)}
+                  onClick={handleNextToFinalize}
                 >
                   Next → Finalize
                 </button>
