@@ -111,7 +111,7 @@ function Home() {
                 </div>
                 <p style={styles.cardDesc}>
                   {course.status === "finished"
-                    ? "✅ You’ve completed this course!"
+                    ? " You’ve completed this course!"
                     : "Continue your learning journey →"}
                 </p>
                 <button style={styles.viewBtn}>Open Course</button>
@@ -156,7 +156,7 @@ const styles = {
     fontSize: "1.8rem",
     fontWeight: "600",
     marginBottom: "25px",
-    borderLeft: "5px solid #ffd700",
+    borderLeft: "5px solid #003cffff",
     paddingLeft: "12px",
     color: "#fef9f3",
   },

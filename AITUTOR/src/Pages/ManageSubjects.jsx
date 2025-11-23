@@ -57,17 +57,9 @@ function ManageSubjects() {
         <p style={styles.subtitle}>Edit or remove subjects you have created.</p>
       </header>
 
-      <button 
-          style={styles.addQuizBtn} 
-          onClick={() => navigate("/upload-quiz")}
-        >
-          ➕ Add Quiz
-        </button>
-
-      
-      <input
+    <input
         type="text"
-        placeholder="🔍 Search subjects..."
+        placeholder=" Search subjects..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         style={styles.search}
@@ -127,7 +119,7 @@ const styles = {
   },
 
   header: {
-    textAlign: "center",
+    textAlign: "left",
     marginBottom: "30px",
   },
   title: {
@@ -136,6 +128,7 @@ const styles = {
     background: "linear-gradient(90deg, #facc15, #fde047)",
     WebkitBackgroundClip: "text",
     WebkitTextFillColor: "transparent",
+    margin: "0",
   },
   subtitle: {
     color: "#cbd5e1",
@@ -259,21 +252,7 @@ const styles = {
     color: "#fff",
     fontSize: "1.1rem",
   },
-  addQuizBtn: {
-    background: "linear-gradient(90deg, #10b981, #34d399)", // Green gradient
-    color: "#0f172a",
-    border: "none",
-    padding: "12px 24px",
-    borderRadius: "30px",
-    fontWeight: "700",
-    fontSize: "1rem",
-    cursor: "pointer",
-    boxShadow: "0 4px 15px rgba(16, 185, 129, 0.4)",
-    transition: "transform 0.2s",
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-  }
+
 };
 
 // Inject keyframes

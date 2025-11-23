@@ -9,8 +9,8 @@ function UploadQuiz() {
   // --- State for Selection Flow ---
   const [subjects, setSubjects] = useState([]);
   const [topics, setTopics] = useState([]);
-  const [selectedSubject, setSelectedSubject] = useState(""); // Stores Subject Name
-  const [selectedTopic, setSelectedTopic] = useState("");     // Stores Topic Title
+  const [selectedSubject, setSelectedSubject] = useState("");
+  const [selectedTopic, setSelectedTopic] = useState("");
   const [step, setStep] = useState(1); // 1 = Select Subject, 2 = Select Topic, 3 = Edit Quiz
 
   // --- State for Quiz Editing ---
@@ -33,16 +33,15 @@ function UploadQuiz() {
   const handleSubjectChange = async (e) => {
     const subjectName = e.target.value;
     setSelectedSubject(subjectName);
-    
+
     if (subjectName) {
       try {
-        // Fetch specific subject details to get the topics list
         const res = await fetch(`${API_BASE_URL}/api/subjects/${subjectName}`);
         const data = await res.json();
         setTopics(data.topics || []);
-        setStep(2); // Move to Topic Selection
+        setStep(2);
       } catch (err) {
-        setMessage("❌ Error fetching topics.");
+        setMessage(" Error fetching topics.");
       }
     }
   };
@@ -50,20 +49,19 @@ function UploadQuiz() {
   // 3. Handle Topic Selection
   const handleTopicClick = async (topicTitle) => {
     setSelectedTopic(topicTitle);
-    setStep(3); // Move to Quiz Editor
-    setMessage(""); // Clear previous messages
+    setStep(3);
+    setMessage("");
 
-    // Try to fetch existing quiz for this topic (so we don't overwrite blindly)
     try {
       const res = await fetch(`${API_BASE_URL}/api/quiz/${selectedSubject}/${topicTitle}`);
       if (res.ok) {
         const data = await res.json();
         if (data.questions && data.questions.length > 0) {
           setQuestions(data.questions);
-          setMessage("ℹ️ Loaded existing questions.");
+          setMessage(" Loaded existing questions.");
         }
       } else {
-        setQuestions([]); // No quiz exists yet, start fresh
+        setQuestions([]);
       }
     } catch (err) {
       setQuestions([]);
@@ -73,20 +71,19 @@ function UploadQuiz() {
   // 4. Add Question Logic
   const addQuestion = () => {
     if (!question || !answer) {
-      return setMessage("⚠️ Please fill question and correct answer.");
+      return setMessage(" Please fill question and correct answer.");
     }
     if (type === "MCQ" && options.some((opt) => !opt)) {
-      return setMessage("⚠️ Please fill all 4 options for MCQ.");
+      return setMessage(" Please fill all 4 options for MCQ.");
     }
 
     const newQ = { question, type, options: type === "MCQ" ? options : [], answer };
     setQuestions([...questions, newQ]);
-    
-    // Reset inputs
+
     setQuestion("");
     setOptions(["", "", "", ""]);
     setAnswer("");
-    setMessage("✅ Question added!");
+    setMessage(" Question added!");
   };
 
   // 5. Save Quiz Logic
@@ -99,322 +96,399 @@ function UploadQuiz() {
       const res = await fetch(`${API_BASE_URL}/api/quiz`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          subjectName: selectedSubject, 
-          topicTitle: selectedTopic, 
-          questions 
+        body: JSON.stringify({
+          subjectName: selectedSubject,
+          topicTitle: selectedTopic,
+          questions,
         }),
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
 
-      setMessage("✅ Quiz saved successfully!");
-      
-      // Optional: Navigate back or clear state
+      setMessage(" Quiz saved successfully!");
+
       setTimeout(() => {
         setMessage("");
-        // If you want to go back to topic list after save:
-        // setStep(2); 
       }, 2000);
-      
     } catch (err) {
-      setMessage(`❌ ${err.message}`);
+      setMessage(` ${err.message}`);
     }
   };
 
-  // --- RENDER HELPERS ---
-
   return (
     <div style={styles.page}>
-      <div style={styles.card}>
-        
-        {/* HEADER */}
-        <h2 style={styles.title}>
-            {step === 3 ? "Add Quiz Questions" : "Quiz Manager"}
-        </h2>
-        
-        {/* Breadcrumb / Subtitle */}
+      
+      {/* HEADER SECTION */}
+      <header style={styles.header}>
+        <h1 style={styles.title}>
+           {step === 3 ? "Quiz Manager" : "Upload Quiz"}
+        </h1>
         <p style={styles.subtitle}>
-            {step === 1 && "Select a Subject to begin"}
-            {step === 2 && `${selectedSubject} → Select a Topic`}
-            {step === 3 && `${selectedSubject} → ${selectedTopic}`}
+          {step === 1 && "Select a Subject to begin adding questions"}
+          {step === 2 && `${selectedSubject} → Select a Topic`}
+          {step === 3 && `Editing: ${selectedSubject} / ${selectedTopic}`}
         </p>
+      </header>
 
-        {/* Message Banner */}
-        {message && (
-          <p style={{
-              ...styles.message,
-              color: message.includes("✅") ? "#22c55e" : message.includes("⚠️") ? "#facc15" : "#ef4444"
-          }}>
-            {message}
-          </p>
-        )}
+      {/* Message Banner */}
+      {message && (
+        <div style={{
+           ...styles.messageBox,
+           borderColor: message.includes("✅") ? "#22c55e" : message.includes("⚠️") ? "#facc15" : "#ef4444"
+        }}>
+           <span style={{ color: message.includes("✅") ? "#86efac" : message.includes("⚠️") ? "#fde047" : "#fca5a5" }}>
+             {message}
+           </span>
+        </div>
+      )}
 
-        {/* STEP 1: SELECT SUBJECT */}
-        {step === 1 && (
-            <div>
-                <label style={styles.label}>Choose Subject:</label>
-                <select 
-                    style={styles.select} 
-                    onChange={handleSubjectChange} 
+      {/* STEP 1: SELECT SUBJECT */}
+      {step === 1 && (
+        <div style={styles.glassContainer}>
+            <label style={styles.label}>Choose Subject:</label>
+            <div style={styles.selectWrapper}>
+                <select
+                    style={styles.select}
+                    onChange={handleSubjectChange}
                     value={selectedSubject}
                 >
-                    <option value="">-- Select Subject --</option>
+                    <option value="" style={{color: '#000'}}>-- Select Subject --</option>
                     {subjects.map((sub) => (
-                        <option key={sub._id} value={sub.name}>{sub.name}</option>
+                    <option key={sub._id} value={sub.name} style={{color: '#000'}}>{sub.name}</option>
                     ))}
                 </select>
             </div>
-        )}
+        </div>
+      )}
 
-        {/* STEP 2: SELECT TOPIC */}
-        {step === 2 && (
-            <div>
-                <button style={styles.backBtn} onClick={() => { setStep(1); setSelectedSubject(""); }}>
-                    ← Back to Subjects
-                </button>
-                
-                <div style={styles.topicList}>
+      {/* STEP 2: SELECT TOPIC (TABLE LIST VIEW) */}
+      {step === 2 && (
+        <div style={styles.fullWidthContainer}>
+            <button style={styles.backBtn} onClick={() => { setStep(1); setSelectedSubject(""); }}>
+                ← Back to Subjects
+            </button>
+
+            <div style={styles.glassTableContainer}>
+                {/* Table Header */}
+                <div style={styles.tableHeader}>
+                    <span style={{width: '60px', textAlign:'center'}}>No.</span>
+                    <span style={{flex: 1, paddingLeft: 20}}>Topic Title</span>
+                    <span style={{width: '100px', textAlign:'right'}}>Action</span>
+                </div>
+
+                {/* Table Body */}
+                <div style={styles.listContainer}>
                     {topics.length === 0 ? (
-                        <p style={{textAlign: "center", color: "#64748b"}}>No topics found for this subject.</p>
+                        <p style={styles.noDataText}>No topics found for this subject.</p>
                     ) : (
                         topics.map((t, index) => (
-                            <div 
-                                key={index} 
-                                style={styles.topicItem} 
+                            <div
+                                key={index}
+                                style={styles.listItem}
                                 onClick={() => handleTopicClick(t.title)}
+                                onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.1)")}
+                                onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.03)")}
                             >
-                                <span>{index + 1}. {t.title}</span>
-                                <span style={styles.arrow}>➜</span>
+                                <span style={styles.listIndex}>{index + 1}</span>
+                                <span style={styles.listTitle}>{t.title}</span>
+                                <span style={styles.listAction}>Select ➜</span>
                             </div>
                         ))
                     )}
                 </div>
             </div>
-        )}
+        </div>
+      )}
 
-        {/* STEP 3: ADD/EDIT QUIZ */}
-        {step === 3 && (
-            <div>
-                <button style={styles.backBtn} onClick={() => setStep(2)}>
-                    ← Back to Topics
-                </button>
+      {/* STEP 3: ADD/EDIT QUIZ */}
+      {step === 3 && (
+        <div style={styles.glassContainer}>
+          <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: 20}}>
+            <button style={styles.backBtn} onClick={() => setStep(2)}>
+                ← Back to Topics
+            </button>
+            <span style={styles.counterBadge}>{questions.length} Questions Added</span>
+          </div>
 
-                {/* Form Inputs */}
+          <input
+            style={styles.input}
+            placeholder="Enter question text..."
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+          />
+
+          <select
+            style={styles.select}
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+          >
+            <option value="MCQ" style={{color: '#000'}}>Multiple Choice (MCQ)</option>
+            <option value="TF" style={{color: '#000'}}>True / False</option>
+          </select>
+
+          {type === "MCQ" && (
+            <div style={styles.optionsGrid}>
+              {options.map((opt, i) => (
                 <input
-                    style={styles.input}
-                    placeholder="Enter question"
-                    value={question}
-                    onChange={(e) => setQuestion(e.target.value)}
+                  key={i}
+                  style={styles.input}
+                  placeholder={`Option ${i + 1}`}
+                  value={opt}
+                  onChange={(e) =>
+                    setOptions(options.map((o, idx) => (idx === i ? e.target.value : o)))
+                  }
                 />
-
-                <select
-                    style={styles.select}
-                    value={type}
-                    onChange={(e) => setType(e.target.value)}
-                >
-                    <option value="MCQ">Multiple Choice (MCQ)</option>
-                    <option value="TF">True / False</option>
-                </select>
-
-                {type === "MCQ" && (
-                    <>
-                    {options.map((opt, i) => (
-                        <input
-                            key={i}
-                            style={styles.input}
-                            placeholder={`Option ${i + 1}`}
-                            value={opt}
-                            onChange={(e) =>
-                                setOptions(options.map((o, idx) => (idx === i ? e.target.value : o)))
-                            }
-                        />
-                    ))}
-                    </>
-                )}
-
-                <input
-                    style={styles.input}
-                    placeholder="Enter correct answer"
-                    value={answer}
-                    onChange={(e) => setAnswer(e.target.value)}
-                />
-
-                {/* Action Buttons */}
-                <div style={styles.btnRow}>
-                    <button style={styles.btnAdd} onClick={addQuestion}>➕ Add Question</button>
-                    <button style={styles.btnSave} onClick={saveQuiz}>💾 Save Quiz</button>
-                </div>
-
-                {/* Preview List */}
-                <div style={styles.previewSection}>
-                    <h4 style={styles.previewTitle}>Added Questions ({questions.length})</h4>
-                    {questions.length === 0 ? (
-                        <p style={{ color: "#94a3b8" }}>No questions added yet.</p>
-                    ) : (
-                        <ul style={styles.questionList}>
-                            {questions.map((q, i) => (
-                                <li key={i} style={styles.questionItem}>
-                                    <div>
-                                        <strong>{i + 1}.</strong> {q.question}
-                                    </div>
-                                    <span style={styles.typeTag}>{q.type}</span>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </div>
+              ))}
             </div>
-        )}
+          )}
 
-      </div>
+          <input
+            style={styles.input}
+            placeholder="Enter the correct answer (matches option exactly)"
+            value={answer}
+            onChange={(e) => setAnswer(e.target.value)}
+          />
+
+          <div style={styles.btnRow}>
+            <button style={styles.btnAdd} onClick={addQuestion}>+ Add Question</button>
+            <button style={styles.btnSave} onClick={saveQuiz}> Save Quiz</button>
+          </div>
+
+          <div style={styles.previewSection}>
+            <h4 style={styles.previewTitle}>Preview Questions</h4>
+            {questions.length === 0 ? (
+              <p style={{ color: "#94a3b8", textAlign:'center', fontStyle:'italic' }}>No questions added yet.</p>
+            ) : (
+              <ul style={styles.questionList}>
+                {questions.map((q, i) => (
+                  <li key={i} style={styles.questionItem}>
+                    <div>
+                      <strong style={{color:'#93c5fd'}}>Q{i + 1}:</strong> {q.question}
+                    </div>
+                    <span style={styles.typeTag}>{q.type}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 /* ================================
-   💅 CSS in JS Styles
+    CSS in JS Styles (Matches Explore)
 ================================ */
 const styles = {
   page: {
-    background: "linear-gradient(135deg, #0f172a, #1e293b)",
     minHeight: "100vh",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: "40px 20px",
+    background: "radial-gradient(circle at 20% 20%, #0f172a, #020617 70%)",
     fontFamily: "'Poppins', sans-serif",
+    color: "#fff",
+    padding: "60px 20px",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
   },
-  card: {
-    background: "#1e293b",
-    color: "#f8fafc",
-    padding: "40px",
-    borderRadius: "16px",
-    boxShadow: "0 10px 30px rgba(0,0,0,0.4)",
-    width: "100%",
-    maxWidth: "600px",
-    minHeight: "400px",
+  
+  header: {
+    textAlign: "center",
+    marginBottom: "40px",
   },
   title: {
-    fontSize: "28px",
-    marginBottom: "5px",
-    color: "#22d3ee",
-    textAlign: "center",
+    fontSize: "2.8rem",
+    fontWeight: "700",
+    background: "linear-gradient(90deg, #2563eb, #60a5fa)",
+    WebkitBackgroundClip: "text",
+    WebkitTextFillColor: "transparent",
+    marginBottom: "10px",
   },
   subtitle: {
-    fontSize: "16px",
-    marginBottom: "25px",
-    textAlign: "center",
-    color: "#94a3b8",
+    fontSize: "1.1rem",
+    color: "#cbd5e1",
   },
-  message: {
-    textAlign: "center",
-    marginBottom: "20px",
-    fontWeight: "600",
+
+  /* Containers */
+  fullWidthContainer: {
+    width: "100%",
+    maxWidth: "800px",
   },
+  
+  glassContainer: {
+    width: "100%",
+    maxWidth: "800px",
+    background: "rgba(255,255,255,0.05)",
+    backdropFilter: "blur(20px)",
+    borderRadius: "20px",
+    border: "1px solid rgba(255,255,255,0.1)",
+    boxShadow: "0 15px 40px rgba(0,0,0,0.5)",
+    padding: "40px",
+  },
+
+  /* --- NEW TABLE LIST STYLES (STEP 2) --- */
+  glassTableContainer: {
+      background: "rgba(255,255,255,0.05)",
+      backdropFilter: "blur(20px)",
+      borderRadius: "20px",
+      border: "1px solid rgba(255,255,255,0.1)",
+      boxShadow: "0 15px 40px rgba(0,0,0,0.5)",
+      padding: "20px",
+      display: "flex",
+      flexDirection: "column",
+  },
+  tableHeader: {
+      display: 'flex',
+      padding: '10px 15px',
+      borderBottom: '1px solid rgba(255,255,255,0.1)',
+      marginBottom: '10px',
+      fontWeight: '600',
+      color: '#93c5fd',
+      fontSize: '0.95rem',
+      textTransform: 'uppercase',
+      letterSpacing: '0.5px'
+  },
+  listContainer: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '8px'
+  },
+  listItem: {
+      display: 'flex',
+      alignItems: 'center',
+      padding: '15px',
+      borderRadius: '12px',
+      background: "rgba(255,255,255,0.03)", // Very subtle background
+      border: '1px solid rgba(255,255,255,0.05)',
+      cursor: 'pointer',
+      transition: 'all 0.2s ease'
+  },
+  listIndex: {
+      width: '60px',
+      textAlign: 'center',
+      fontWeight: 'bold',
+      color: '#cbd5e1',
+      fontSize: '1rem',
+  },
+  listTitle: {
+      flex: 1,
+      paddingLeft: '20px',
+      fontSize: '1rem',
+      color: '#fff',
+      fontWeight: '500'
+  },
+  listAction: {
+      width: '100px',
+      textAlign: 'right',
+      color: '#3b82f6',
+      fontSize: '0.9rem',
+      fontWeight: '600'
+  },
+
+  /* Inputs & Forms */
   label: {
     display: "block",
-    marginBottom: "8px",
-    color: "#cbd5e1",
+    marginBottom: "10px",
+    color: "#93c5fd",
     fontWeight: "600",
+    fontSize: "1.1rem",
   },
   input: {
     width: "100%",
-    padding: "12px",
-    marginBottom: "10px",
-    borderRadius: "10px",
-    border: "1px solid #334155",
-    background: "#0f172a",
-    color: "#f8fafc",
-    fontSize: "15px",
+    padding: "14px",
+    marginBottom: "15px",
+    borderRadius: "12px",
+    border: "1px solid rgba(255,255,255,0.1)",
+    background: "rgba(0,0,0,0.3)",
+    color: "#fff",
+    fontSize: "1rem",
     outline: "none",
+    boxSizing: "border-box",
   },
+  selectWrapper: { position: 'relative' },
   select: {
     width: "100%",
-    padding: "12px",
-    marginBottom: "15px",
-    borderRadius: "10px",
-    border: "1px solid #334155",
-    background: "#0f172a",
-    color: "#f8fafc",
-    fontSize: "15px",
+    padding: "14px",
+    marginBottom: "20px",
+    borderRadius: "12px",
+    border: "1px solid rgba(255,255,255,0.1)",
+    background: "rgba(0,0,0,0.3)",
+    color: "#fff",
+    fontSize: "1rem",
     outline: "none",
     cursor: "pointer",
+    boxSizing: "border-box",
   },
-  // Topic List Styles
-  topicList: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "10px",
-    marginTop: "10px",
+  optionsGrid: {
+      display: 'grid',
+      gridTemplateColumns: '1fr 1fr',
+      gap: '10px',
+      marginBottom: '10px'
   },
-  topicItem: {
-    background: "#0f172a",
-    padding: "15px",
-    borderRadius: "10px",
-    border: "1px solid #334155",
-    cursor: "pointer",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    transition: "all 0.2s ease",
-    color: "#e2e8f0",
-  },
-  arrow: {
-    color: "#22d3ee",
-    fontWeight: "bold",
-  },
+
+  /* Buttons */
   backBtn: {
     background: "transparent",
     border: "none",
     color: "#94a3b8",
     cursor: "pointer",
-    marginBottom: "15px",
-    fontSize: "14px",
-    padding: "0",
-    textDecoration: "underline",
+    marginBottom: "20px",
+    fontSize: "1rem",
+    display: 'flex',
+    alignItems: 'center',
+    gap: '5px',
+    transition: "color 0.2s",
   },
-  // Button Styles
   btnRow: {
     display: "flex",
-    justifyContent: "space-between",
-    marginTop: "15px",
-    flexWrap: "wrap",
-    gap: "10px",
+    gap: "15px",
+    marginTop: "10px",
   },
   btnAdd: {
     flex: 1,
     padding: "12px",
-    background: "#38bdf8",
-    color: "#0f172a",
+    background: "linear-gradient(90deg, #3b82f6, #2563eb)",
+    color: "#fff",
     fontWeight: "600",
-    borderRadius: "10px",
+    borderRadius: "12px",
     border: "none",
     cursor: "pointer",
-    transition: "0.3s",
+    transition: "transform 0.2s",
+    boxShadow: "0 4px 15px rgba(37, 99, 235, 0.4)",
   },
   btnSave: {
     flex: 1,
     padding: "12px",
-    background: "#22c55e",
-    color: "#0f172a",
+    background: "linear-gradient(90deg, #10b981, #059669)",
+    color: "#fff",
     fontWeight: "600",
-    borderRadius: "10px",
+    borderRadius: "12px",
     border: "none",
     cursor: "pointer",
-    transition: "0.3s",
+    transition: "transform 0.2s",
+    boxShadow: "0 4px 15px rgba(16, 185, 129, 0.4)",
   },
-  // Preview Styles
+
+  /* Feedback & Preview */
+  messageBox: {
+      padding: "10px 20px",
+      borderRadius: "30px",
+      border: "1px solid",
+      background: "rgba(0,0,0,0.3)",
+      marginBottom: "30px",
+      textAlign: "center",
+  },
   previewSection: {
-    marginTop: "30px",
-    borderTop: "1px solid #334155",
+    marginTop: "40px",
+    borderTop: "1px solid rgba(255,255,255,0.1)",
     paddingTop: "20px",
   },
   previewTitle: {
-    marginBottom: "10px",
-    color: "#22d3ee",
+    marginBottom: "15px",
+    color: "#93c5fd",
     fontWeight: "600",
+    fontSize: "1.1rem",
   },
   questionList: {
     listStyle: "none",
@@ -422,23 +496,39 @@ const styles = {
     margin: 0,
   },
   questionItem: {
-    background: "#0f172a",
+    background: "rgba(255,255,255,0.03)",
     marginBottom: "10px",
-    padding: "10px 14px",
+    padding: "15px",
     borderRadius: "10px",
-    fontSize: "15px",
+    fontSize: "0.95rem",
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
+    border: "1px solid rgba(255,255,255,0.05)",
   },
   typeTag: {
-    background: "#22d3ee",
-    color: "#0f172a",
+    background: "rgba(34, 211, 238, 0.2)",
+    color: "#67e8f9",
     borderRadius: "8px",
-    padding: "2px 8px",
-    fontSize: "12px",
+    padding: "4px 10px",
+    fontSize: "0.8rem",
     fontWeight: "600",
+    border: "1px solid rgba(34, 211, 238, 0.3)",
   },
+  counterBadge: {
+      background: "rgba(255,255,255,0.1)",
+      padding: "5px 12px",
+      borderRadius: "20px",
+      fontSize: "0.85rem",
+      color: "#cbd5e1"
+  },
+  noDataText: {
+      textAlign: "center",
+      color: "#64748b",
+      gridColumn: "1 / -1",
+      fontSize: "1.1rem",
+      marginTop: "20px"
+  }
 };
 
 export default UploadQuiz;

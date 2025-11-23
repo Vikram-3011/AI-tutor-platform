@@ -94,8 +94,8 @@ function MyCourses() {
           <div style={styles.emptyState}>
             <p style={styles.noCourses}>
               {filter === "unfinished"
-                ? "No unfinished courses found 🎯"
-                : "No finished courses yet 🎉"}
+                ? "No unfinished courses found "
+                : "No finished courses yet "}
             </p>
             <p style={styles.emptyMessage}>
               {filter === "unfinished"
@@ -135,7 +135,7 @@ function MyCourses() {
                 </div>
                 <p style={styles.courseDesc}>
                   {course.status === "finished"
-                    ? "✅ You’ve completed this course!"
+                    ? " You’ve completed this course!"
                     : "Continue your learning journey →"}
                 </p>
                 <button style={styles.viewBtn}>Open Course</button>
@@ -147,7 +147,7 @@ function MyCourses() {
         style={styles.performanceBtn}
         onClick={() => navigate(`/performance`)}
       >
-        📈 View Performance
+         View Performance
       </button>
 
       </div>
@@ -168,7 +168,7 @@ const styles = {
   },
  performanceBtn: {
   marginTop: "30px",
-  alignSelf: "flex-end",     // 👌 Moves button to bottom-right inside the card
+  alignSelf: "flex-end",    
   padding: "12px 28px",
   borderRadius: "30px",
   border: "none",

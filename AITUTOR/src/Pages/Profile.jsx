@@ -157,7 +157,7 @@ function Profile() {
           </div>
 
           <div style={styles.formGroup}>
-            <label style={styles.label} htmlFor="email">Email (Immutable)</label>
+            <label style={styles.label} htmlFor="email">Email</label>
             <input
               type="email" id="email" name="email"
               value={profile.email} disabled

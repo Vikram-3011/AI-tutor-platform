@@ -46,7 +46,7 @@ function EditSubject() {
     setSubject({ ...subject, topics: updatedTopics });
   };
 
-  // ✅ Fix: examples are objects with description and code
+  //  Fix: examples are objects with description and code
   const handleExampleChange = (topicIndex, exampleIndex, field, value) => {
     const updatedTopics = [...subject.topics];
     const examples = updatedTopics[topicIndex].examples || [];
@@ -266,7 +266,7 @@ function EditSubject() {
   );
 }
 
-// 🎨 Clean, compact styles
+//  Clean, compact styles
 const styles = {
   page: {
     minHeight: "100vh",

@@ -107,7 +107,7 @@ function ManageRoles() {
         <div style={styles.filters}>
           <input
             type="text"
-            placeholder="🔍 Search users..."
+            placeholder=" Search users..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             style={styles.search}
@@ -212,7 +212,7 @@ const styles = {
     fontSize: "2.8rem",
     fontWeight: "700",
     textAlign: "center",
-    background: "linear-gradient(90deg, #facc15, #fde047)",
+    background: "linear-gradient(90deg, #2563eb, #60a5fa)",
     WebkitTextFillColor: "transparent",
     WebkitBackgroundClip: "text",
   },

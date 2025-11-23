@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { createClient } from "@supabase/supabase-js";
 import { API_BASE_URL } from "../config";
 
-// ✅ Initialize Supabase client
+//  Initialize Supabase client
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
   import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -17,11 +17,11 @@ function SubjectDetail() {
   const [loading, setLoading] = useState(true);
   const [userEmail, setUserEmail] = useState(null);
 
-  // ✅ Notification state
+  //  Notification state
   const [notification, setNotification] = useState({ message: "", type: "" });
   const [showNotification, setShowNotification] = useState(false);
 
-  // ✅ Get logged-in Supabase user email
+  //  Get logged-in Supabase user email
   useEffect(() => {
     const getUser = async () => {
       const {
@@ -32,7 +32,7 @@ function SubjectDetail() {
     getUser();
   }, []);
 
-  // ✅ Fetch subject data
+  //  Fetch subject data
   useEffect(() => {
     fetch(`${API_BASE_URL}/api/subjects/${name}`)
       .then((res) => res.json())
@@ -52,14 +52,14 @@ function SubjectDetail() {
       });
   }, [name, topicTitle]);
 
-  // ✅ Notification helper
+  //  Notification helper
   const showNotif = (message, type = "success") => {
     setNotification({ message, type });
     setShowNotification(true);
     setTimeout(() => setShowNotification(false), 3000);
   };
 
-  // ✅ Handle Add Course
+  //  Handle Add Course
   const handleAddCourse = async () => {
     if (!userEmail) {
       showNotif("Please login first to add this course.", "error");
@@ -82,7 +82,7 @@ function SubjectDetail() {
     }
   };
 
-  // ✅ Handle Finish Course (UPDATED LOGIC)
+  //  Handle Finish Course (UPDATED LOGIC)
   const handleFinishCourse = async () => {
     if (!userEmail) return;
     try {
@@ -95,7 +95,7 @@ function SubjectDetail() {
         }),
       });
 
-      // 🔄 CHANGE: Redirect to Performance Page with state
+      //  CHANGE: Redirect to Performance Page with state
       // This passes the subject name so the Performance page loads this subject's graph immediately
       navigate(`/performance`, { state: { subjectName: subject.name } });
 
@@ -150,7 +150,7 @@ function SubjectDetail() {
       <div style={styles.layout}>
         {/* Sidebar */}
         <div style={styles.sidebar}>
-          <h2 style={styles.sidebarTitle}>📚 Topics</h2>
+          <h2 style={styles.sidebarTitle}> Topics</h2>
           <ul style={styles.topicList}>
             {subject.topics.map((topic, index) => (
               <li
@@ -190,7 +190,7 @@ function SubjectDetail() {
               }}
               onClick={handleAddCourse}
             >
-              ➕ Add Course
+              + Add Course
             </button>
           </div>
 
@@ -222,7 +222,7 @@ function SubjectDetail() {
             {/* Navigation buttons */}
             <div style={styles.buttonsContainer}>
               <button style={styles.quizBtn} onClick={handleTakeQuiz}>
-                🧠 Take Quiz on {currentTopic.title}
+                 Take Quiz on {currentTopic.title}
               </button>
               <div style={styles.navButtons}>
                 <button

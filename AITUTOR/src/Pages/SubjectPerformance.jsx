@@ -51,7 +51,7 @@ function SubjectPerformance() {
   return (
     <div style={styles.page}>
       <div style={styles.card}>
-        <h1 style={styles.title}>📊 {subjectName} - Performance Report</h1>
+        <h1 style={styles.title}> {subjectName} - Performance Report</h1>
 
         {performance.length === 0 ? (
           <p style={styles.noData}>No performance data found for this subject.</p>
@@ -85,11 +85,11 @@ function SubjectPerformance() {
 
             <div style={styles.summary}>
               <h2>Summary</h2>
-              <p>🧮 <strong>Average Score:</strong> {summary.avg}%</p>
+              <p> <strong>Average Score:</strong> {summary.avg}%</p>
               {summary.weakTopics.length > 0 ? (
-                <p>⚠️ <strong>Weak Topics:</strong> {summary.weakTopics.join(", ")}</p>
+                <p> <strong>Weak Topics:</strong> {summary.weakTopics.join(", ")}</p>
               ) : (
-                <p>✅ All topics look strong! Great job!</p>
+                <p> All topics look strong! Great job!</p>
               )}
             </div>
           </>

@@ -24,7 +24,12 @@ import AttendQuiz from "./Pages/AttendQuiz.jsx";
 import Landingpage from "./Pages/LandingPage.jsx";
 import ChangePassword from "./Pages/ChangePassword.jsx";
 import Mycourse from "./Pages/MyCourses.jsx";
-// import performance from "./Pages/SubjectPerformance.jsx";
+import PerformancePage from "./Pages/PerformancePage.jsx";
+import Contact from "./Pages/contact.jsx";
+import ProtectedRoute from "./ProtectedRoute";
+import { AuthProvider } from "./AuthContext";
+
+// Assets
 import homeIcon from "./assets/home.png";
 import commentIcon from "./assets/comment.png";
 import documentIcon from "./assets/manage.png";
@@ -34,9 +39,6 @@ import userIcon from "./assets/user-add.png";
 import logo from "./assets/circle.png";
 import courseIcon from "./assets/learning.png";
 import "./App.css";
-import PerformancePage from "./Pages/PerformancePage.jsx";
-import Contact from "./Pages/contact.jsx";
-import ProtectedRoute from "./ProtectedRoute";
 
 /* ---------- USER MENU ---------- */
 function UserMenu() {
@@ -44,17 +46,19 @@ function UserMenu() {
   const [avatar, setAvatar] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
-  const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
+  
+  const API_BASE = "http://localhost:5000";
 
   useEffect(() => {
-    const fetchUser = async () => {
-      const {
-        data: { user: supaUser },
-      } = await supabase.auth.getUser();
-      if (!supaUser) return;
-      setUser(supaUser);
+    const fetchProfile = async (currentUser) => {
+      if (!currentUser) {
+        setUser(null);
+        setAvatar("");
+        return;
+      }
+      setUser(currentUser);
 
-      const emailEncoded = encodeURIComponent(supaUser.email);
+      const emailEncoded = encodeURIComponent(currentUser.email);
       try {
         const res = await fetch(`${API_BASE}/api/profile/${emailEncoded}`);
         if (res.ok) {
@@ -67,17 +71,31 @@ function UserMenu() {
           }
         }
       } catch (err) {
-        console.error(err);
+        console.error("Profile fetch error:", err);
       }
     };
-    fetchUser();
+
+    // 1. Initial Fetch
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) fetchProfile(user);
+    });
+
+    // 2. Listen for Auth Changes (Login/Logout)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        fetchProfile(session?.user);
+      } else if (event === 'SIGNED_OUT') {
+        fetchProfile(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const handleSignOut = async () => {
     try {
       await supabase.auth.signOut();
       navigate("/signin");
-      window.location.reload();
     } catch (error) {
       console.error("Error signing out:", error);
     }
@@ -112,7 +130,13 @@ function UserMenu() {
 /* ---------- MAIN APP ---------- */
 function App() {
   const [theme, setTheme] = useState("light");
+  const [userRole, setUserRole] = useState(null); // 'user', 'admin', 'superadmin'
+  const [authLoading, setAuthLoading] = useState(true);
+  
   const location = useLocation();
+  const navigate = useNavigate();
+  const API_BASE = "http://localhost:5000";
+
   const hideSidebarRoutes = ["/landingpage", "/signup", "/signin", "/contact"];
   const hideSidebar = hideSidebarRoutes.includes(location.pathname);
 
@@ -120,20 +144,100 @@ function App() {
     document.body.className = theme;
   }, [theme]);
 
-  // Show all menu items to all logged-in users
-  const navItems = [
-    { path: "/home", label: "Home", icon: homeIcon },
-    { path: "/Explore", label: "Explore", icon: exploreIcon },
-    { path: "/chat", label: "AI Chat", icon: commentIcon },
-    { path: "/my-courses", label: "My Courses", icon: courseIcon },
-    { path: "/upload-subject", label: "Upload", icon: plusIcon },
-    { path: "/manage-subjects", label: "Manage Subjects", icon: documentIcon },
-    { path: "/manage-roles", label: "Manage Roles", icon: userIcon },
+  //  ROBUST AUTH & ROLE LISTENER
+  useEffect(() => {
+    const fetchAndSetRole = async (currentUser) => {
+      if (!currentUser) {
+        setUserRole(null);
+        setAuthLoading(false);
+        return;
+      }
+
+      try {
+        // Fetch role from backend
+        const res = await fetch(`${API_BASE}/api/roles/register-login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            email: currentUser.email, 
+            name: currentUser.user_metadata?.full_name 
+          }),
+        });
+        
+        const data = await res.json();
+        
+        if (data.user) {
+          if (data.user.is_super) setUserRole("superadmin");
+          else if (data.user.is_admin) setUserRole("admin");
+          else setUserRole("user");
+        } else {
+          // Fallback if user exists in Supabase but not DB yet
+          setUserRole("user");
+        }
+      } catch (error) {
+        console.error("Error fetching role:", error);
+        // Default to 'user' on error so sidebar isn't empty
+        setUserRole("user");
+      } finally {
+        setAuthLoading(false);
+      }
+    };
+
+    // 1. Check Session Immediately
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        fetchAndSetRole(session.user);
+      } else {
+        setAuthLoading(false);
+      }
+    });
+
+    // 2. Listen for Login/Logout Events
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) {
+        setAuthLoading(true);
+        fetchAndSetRole(session.user);
+      } else if (event === 'SIGNED_OUT') {
+        setUserRole(null);
+        setAuthLoading(false);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  //  Navigation Logic
+  const allNavItems = [
+    { path: "/home", label: "Home", icon: homeIcon, roles: ["user", "admin", "superadmin"] },
+    { path: "/Explore", label: "Explore", icon: exploreIcon, roles: ["user", "admin", "superadmin"] },
+    { path: "/chat", label: "AI Chat", icon: commentIcon, roles: ["user", "admin", "superadmin"] },
+    { path: "/my-courses", label: "My Courses", icon: courseIcon, roles: ["user", "admin", "superadmin"] },
+    
+    // Admin Pages
+    { path: "/upload-subject", label: "Upload", icon: plusIcon, roles: ["admin", "superadmin"] },
+    { path: "/manage-subjects", label: "Manage Subjects", icon: documentIcon, roles: ["admin", "superadmin"] },
+    
+    // Super Admin Page
+    { path: "/manage-roles", label: "Manage Roles", icon: userIcon, roles: ["superadmin"] },
   ];
+
+  // Filter nav items based on current role
+  const visibleNavItems = allNavItems.filter(item => item.roles.includes(userRole));
+
+  //  Role Guard Component
+  const RoleRoute = ({ children, allowedRoles }) => {
+    if (authLoading) return <div className="loading-screen">Verifying access...</div>;
+    if (!userRole || !allowedRoles.includes(userRole)) {
+      return <Navigate to="/home" replace />;
+    }
+    return children;
+  };
 
   return (
     <div className="app-container">
-      {/* Sidebar - visible for all logged-in users */}
+      {/* Sidebar */}
       {!hideSidebar && (
         <nav className={`sidebar ${theme}`}>
           <div className="nav-header">
@@ -142,7 +246,7 @@ function App() {
           </div>
 
           <ul className="nav-links">
-            {navItems.map((item) => (
+            {visibleNavItems.map((item) => (
               <li key={item.path}>
                 <a href={item.path}>
                   <img src={item.icon} alt={item.label} className="nav-icon" />
@@ -156,38 +260,73 @@ function App() {
         </nav>
       )}
 
-      {/* Main content */}
       <div className="main-content" style={{ marginLeft: hideSidebar ? "0" : "" }}>
-        
         <Routes>
+          {/* Public Routes */}
           <Route path="/" element={<Navigate to="/landingpage" replace />} />
           <Route path="/landingpage" element={<Landingpage />} />
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />
+          <Route path="/contact" element={<Contact />} />
+
+          {/* Common Routes (Accessible by all logged-in users) */}
           <Route path="/home" element={ <ProtectedRoute> <Home /> </ProtectedRoute>} />
           <Route path="/Explore" element={<ProtectedRoute><Explore /></ProtectedRoute>} />
           <Route path="/subject/:name" element={<ProtectedRoute><SubjectDetail /></ProtectedRoute>} />
-          <Route path="/upload-subject" element={<ProtectedRoute><UploadSubject /></ProtectedRoute>} />
-          <Route path="/manage-subjects" element={ <ProtectedRoute><ManageSubjects /></ProtectedRoute>} />
-          <Route path="/edit-subject/:id" element={<ProtectedRoute><EditSubject /></ProtectedRoute> } />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-          <Route path="/manage-roles" element={<ProtectedRoute><ManageRoles /></ProtectedRoute>} />
           <Route path="/chat" element={<ProtectedRoute><ChatBot /></ProtectedRoute>} />
-          <Route path="/upload-quiz" element={<UploadQuiz />} />
           <Route path="/take-quiz/:subjectName/:topicTitle" element={<AttendQuiz />} />
           <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
           <Route path="/my-courses" element={<ProtectedRoute><Mycourse /></ProtectedRoute>} />
           <Route path="/performance" element={<ProtectedRoute><PerformancePage /></ProtectedRoute>} />
-          <Route path="/contact" element={<Contact />} />
+
+          {/* Admin & SuperAdmin Routes */}
+          <Route path="/upload-subject" element={
+            <ProtectedRoute>
+              <RoleRoute allowedRoles={["admin", "superadmin"]}>
+                <UploadSubject />
+              </RoleRoute>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/manage-subjects" element={
+            <ProtectedRoute>
+              <RoleRoute allowedRoles={["admin", "superadmin"]}>
+                <ManageSubjects />
+              </RoleRoute>
+            </ProtectedRoute>
+          } />
+
+          <Route path="/edit-subject/:id" element={
+            <ProtectedRoute>
+              <RoleRoute allowedRoles={["admin", "superadmin"]}>
+                <EditSubject />
+              </RoleRoute>
+            </ProtectedRoute>
+          } />
+
+          <Route path="/upload-quiz" element={
+            <ProtectedRoute>
+              <RoleRoute allowedRoles={["admin", "superadmin"]}>
+                <UploadQuiz />
+              </RoleRoute>
+            </ProtectedRoute>
+          } />
+
+          {/* SuperAdmin Only Routes */}
+          <Route path="/manage-roles" element={
+            <ProtectedRoute>
+              <RoleRoute allowedRoles={["superadmin"]}>
+                <ManageRoles />
+              </RoleRoute>
+            </ProtectedRoute>
+          } />
 
         </Routes>
       </div>
     </div>
   );
 }
-
-/* ---------- WRAPPER ---------- */
-import { AuthProvider } from "./AuthContext";
 
 export default function AppWrapper() {
   return (

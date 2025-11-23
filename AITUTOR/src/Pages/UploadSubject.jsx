@@ -30,11 +30,11 @@ function UploadSubject() {
 
   // 1. Manual Add Example
   const addExample = () => {
-    if (!exampleDescription || !exampleCode) return setMessage("⚠️ Fill both example fields.");
+    if (!exampleDescription || !exampleCode) return setMessage(" Fill both example fields.");
     setExamples([...examples, { description: exampleDescription, code: exampleCode }]);
     setExampleDescription("");
     setExampleCode("");
-    setMessage("✅ Example added!");
+    setMessage(" Example added!");
   };
 
   // 2. Save Examples (Auto-adds pending input)
@@ -46,22 +46,22 @@ function UploadSubject() {
         setExampleDescription("");
         setExampleCode("");
     }
-    if (finalExamples.length === 0) return setMessage("⚠️ Add at least one example first.");
+    if (finalExamples.length === 0) return setMessage(" Add at least one example first.");
     setIsExampleSaved(true);
-    setMessage("✅ Examples saved.");
+    setMessage(" Examples saved.");
   };
 
   // 3. Manual Add Topic
   const addTopic = () => {
-    if (!topicTitle || !topicContent) return setMessage("⚠️ Fill topic title & content.");
-    if (!isExampleSaved || examples.length === 0) return setMessage("⚠️ Save examples first.");
+    if (!topicTitle || !topicContent) return setMessage(" Fill topic title & content.");
+    if (!isExampleSaved || examples.length === 0) return setMessage(" Save examples first.");
     setTopics([...topics, { title: topicTitle, content: topicContent, examples }]);
     setTopicTitle("");
     setTopicContent("");
     setExamples([]);
     setIsTopicSaved(true);
     setIsExampleSaved(false);
-    setMessage("✅ Topic saved!");
+    setMessage(" Topic saved!");
   };
 
   // 4. NEW: Handle Next Button (Auto-processes Topic + Example)
@@ -79,7 +79,7 @@ function UploadSubject() {
     if (topicTitle && topicContent) {
       // Validate: Does this pending topic have examples (either in array or just added)?
       if (currentExamples.length === 0) {
-        return setMessage("⚠️ Please add at least one example for the current topic.");
+        return setMessage(" Please add at least one example for the current topic.");
       }
 
       // Create the new topic object
@@ -96,7 +96,7 @@ function UploadSubject() {
 
     // C. Final Check: Do we have any topics to proceed?
     if (currentTopics.length === 0) {
-      return setMessage("⚠️ You must add at least one topic before finalizing.");
+      return setMessage(" You must add at least one topic before finalizing.");
     }
 
     // D. Update State and Move Next
@@ -116,10 +116,10 @@ function UploadSubject() {
 
   const finalizeSubject = () => {
     if (!name || !overview || !whyLearn || !purpose || topics.length === 0)
-      return setMessage("⚠️ Complete all fields & add at least one topic.");
+      return setMessage(" Complete all fields & add at least one topic.");
     // isTopicSaved check removed here because handleNextToFinalize ensures topics exist
     setFinalizeMode(true);
-    setMessage("✅ Ready to upload!");
+    setMessage(" Ready to upload!");
   };
 
   const saveSubject = async () => {
@@ -139,7 +139,7 @@ function UploadSubject() {
 
       if (!res.ok) {
         const errorData = await res.json();
-        setMessage(errorData.message || "❌ Upload failed.");
+        setMessage(errorData.message || " Upload failed.");
         return;
       }
 
@@ -151,7 +151,7 @@ function UploadSubject() {
       }, 2000);
     } catch (err) {
       console.error(err);
-      setMessage("❌ Error uploading subject.");
+      setMessage(" Error uploading subject.");
     }
   };
 
@@ -159,10 +159,22 @@ function UploadSubject() {
 
   return (
     <div style={styles.page}>
-      <header style={styles.header}>
-        <h1 style={styles.title}>Upload New Subject</h1>
-        <p style={styles.subtitle}>Add subject content just like creating a course</p>
-      </header>
+      
+      {/* --- MODIFIED HEADER SECTION START --- */}
+      <div style={styles.headerContainer}>
+        <div style={styles.headerText}>
+            <h1 style={styles.title}>Upload New Subject</h1>
+            <p style={styles.subtitle}>Add subject content just like creating a course</p>
+        </div>
+        
+        <button 
+          style={styles.addQuizBtn} 
+          onClick={() => navigate("/upload-quiz")}
+        >
+          + Add Quiz
+        </button>
+      </div>
+      {/* --- MODIFIED HEADER SECTION END --- */}
 
       <div style={styles.container}>
         {/* PROGRESS BAR */}
@@ -351,7 +363,7 @@ function UploadSubject() {
                   </button>
                 ) : (
                   <button style={styles.primaryBtn} onClick={saveSubject}>
-                    🚀 Upload Now
+                     Upload Now
                   </button>
                 )}
               </div>
@@ -383,9 +395,18 @@ const styles = {
     color: "#fff",
   },
 
-  header: {
-    textAlign: "center",
+  /* --- NEW HEADER CONTAINER STYLE --- */
+  headerContainer: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    width: "100%",
+    maxWidth: "900px", // Matches the container width
     marginBottom: "40px",
+  },
+
+  headerText: {
+    textAlign: "left",
   },
 
   title: {
@@ -394,6 +415,7 @@ const styles = {
     background: "linear-gradient(90deg, #2563eb, #60a5fa)",
     WebkitBackgroundClip: "text",
     WebkitTextFillColor: "transparent",
+    margin: 0,
   },
 
   subtitle: {
@@ -558,6 +580,23 @@ const styles = {
     fontWeight: "600",
     boxShadow: "0 20px 40px rgba(0,0,0,0.5)",
   },
+
+  addQuizBtn: {
+    background: "linear-gradient(90deg, #8ec8faff, #115cb2ff)", 
+    color: "#0f172a",
+    border: "none",
+    padding: "12px 24px",
+    borderRadius: "30px",
+    fontWeight: "700",
+    fontSize: "1rem",
+    cursor: "pointer",
+    boxShadow: "0 4px 15px rgba(13, 41, 204, 0.4)",
+    transition: "transform 0.2s",
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    flexShrink: 0, 
+  }
 };
 
 export default UploadSubject;
