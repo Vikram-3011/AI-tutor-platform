@@ -15,8 +15,8 @@ function LandingPage() {
       {/* Navbar */}
       <nav className="landing-nav">
         <div className="nav-left">
-          <img src={logo} alt="AI Tutor Logo" className="logo" />
-          <span className="logo-text">AI Tutor</span>
+          <img src={logo} alt="Ritlens Logo" className="logo" />
+          <span className="logo-text">Ritlens</span>
         </div>
         <div className="nav-right">
           <button className="btn nav-btn-outline" onClick={() => navigate("/signin")}>

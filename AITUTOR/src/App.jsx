@@ -41,12 +41,11 @@ import courseIcon from "./assets/learning.png";
 import "./App.css";
 
 /* ---------- USER MENU ---------- */
-function UserMenu() {
+function UserMenu({ currentTheme, toggleTheme }) {
   const [user, setUser] = useState(null);
   const [avatar, setAvatar] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
-  
   const API_BASE = "http://localhost:5000";
 
   useEffect(() => {
@@ -75,12 +74,10 @@ function UserMenu() {
       }
     };
 
-    // 1. Initial Fetch
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) fetchProfile(user);
     });
 
-    // 2. Listen for Auth Changes (Login/Logout)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
         fetchProfile(session?.user);
@@ -113,12 +110,17 @@ function UserMenu() {
         )}
         <span style={styles.userName}>{user?.email?.split("@")[0]}</span>
       </div>
+      
       {menuOpen && (
         <div style={styles.userDropdown}>
           <div style={styles.dropdownItem} onClick={() => navigate("/profile")}>
             Profile
           </div>
-          <div style={styles.dropdownItem} onClick={handleSignOut}>
+          {/* Theme Toggle */}
+          <div style={styles.dropdownItem} onClick={toggleTheme}>
+            {currentTheme === "dark" ? "☀️ Light Mode" : "🌙 Dark Mode"}
+          </div>
+          <div style={{...styles.dropdownItem, borderTop: "1px solid var(--menu-border)"}} onClick={handleSignOut}>
             Sign Out
           </div>
         </div>
@@ -129,22 +131,41 @@ function UserMenu() {
 
 /* ---------- MAIN APP ---------- */
 function App() {
-  const [theme, setTheme] = useState("light");
-  const [userRole, setUserRole] = useState(null); // 'user', 'admin', 'superadmin'
+  const [theme, setTheme] = useState("dark");
+  const [userRole, setUserRole] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [mobileOpen, setMobileOpen] = useState(false);
   
   const location = useLocation();
   const navigate = useNavigate();
   const API_BASE = "http://localhost:5000";
 
-  const hideSidebarRoutes = ["/landingpage", "/signup", "/signin", "/contact"];
-  const hideSidebar = hideSidebarRoutes.includes(location.pathname);
+  // ✅ 1. Robust Logic to Hide Sidebar (Includes "/" root path)
+  const hideSidebarRoutes = ["/landingpage", "/signup", "/signin", "/contact", "/"];
+  const hideSidebar = hideSidebarRoutes.some(route => {
+    // Exact match or sub-route match (except root which must be exact)
+    return location.pathname === route || (route !== "/" && location.pathname.startsWith(route));
+  });
+
+  // Theme Toggle
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+  };
 
   useEffect(() => {
-    document.body.className = theme;
+    if (theme === "dark") {
+      document.body.classList.remove("light");
+    } else {
+      document.body.classList.add("light");
+    }
   }, [theme]);
 
-  //  ROBUST AUTH & ROLE LISTENER
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
+
+  // Fetch Role
   useEffect(() => {
     const fetchAndSetRole = async (currentUser) => {
       if (!currentUser) {
@@ -152,9 +173,7 @@ function App() {
         setAuthLoading(false);
         return;
       }
-
       try {
-        // Fetch role from backend
         const res = await fetch(`${API_BASE}/api/roles/register-login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -165,25 +184,21 @@ function App() {
         });
         
         const data = await res.json();
-        
         if (data.user) {
           if (data.user.is_super) setUserRole("superadmin");
           else if (data.user.is_admin) setUserRole("admin");
           else setUserRole("user");
         } else {
-          // Fallback if user exists in Supabase but not DB yet
           setUserRole("user");
         }
       } catch (error) {
         console.error("Error fetching role:", error);
-        // Default to 'user' on error so sidebar isn't empty
         setUserRole("user");
       } finally {
         setAuthLoading(false);
       }
     };
 
-    // 1. Check Session Immediately
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         fetchAndSetRole(session.user);
@@ -192,7 +207,6 @@ function App() {
       }
     });
 
-    // 2. Listen for Login/Logout Events
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session?.user) {
         setAuthLoading(true);
@@ -203,30 +217,22 @@ function App() {
       }
     });
 
-    return () => {
-      subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, []);
 
-  //  Navigation Logic
+  // Navigation Items
   const allNavItems = [
     { path: "/home", label: "Home", icon: homeIcon, roles: ["user", "admin", "superadmin"] },
     { path: "/Explore", label: "Explore", icon: exploreIcon, roles: ["user", "admin", "superadmin"] },
     { path: "/chat", label: "AI Chat", icon: commentIcon, roles: ["user", "admin", "superadmin"] },
     { path: "/my-courses", label: "My Courses", icon: courseIcon, roles: ["user", "admin", "superadmin"] },
-    
-    // Admin Pages
     { path: "/upload-subject", label: "Upload", icon: plusIcon, roles: ["admin", "superadmin"] },
     { path: "/manage-subjects", label: "Manage Subjects", icon: documentIcon, roles: ["admin", "superadmin"] },
-    
-    // Super Admin Page
     { path: "/manage-roles", label: "Manage Roles", icon: userIcon, roles: ["superadmin"] },
   ];
 
-  // Filter nav items based on current role
   const visibleNavItems = allNavItems.filter(item => item.roles.includes(userRole));
 
-  //  Role Guard Component
   const RoleRoute = ({ children, allowedRoles }) => {
     if (authLoading) return <div className="loading-screen">Verifying access...</div>;
     if (!userRole || !allowedRoles.includes(userRole)) {
@@ -237,30 +243,52 @@ function App() {
 
   return (
     <div className="app-container">
-      {/* Sidebar */}
+      
+      {/* ✅ 2. Render Sidebar & Mobile Logic ONLY if hideSidebar is FALSE */}
       {!hideSidebar && (
-        <nav className={`sidebar ${theme}`}>
-          <div className="nav-header">
-            <img src={logo} alt="RitLens Logo" />
-            <h2 className="logo">RitLens</h2>
-          </div>
+        <>
+          {/* Mobile Toggle Button */}
+          <button 
+            className="mobile-menu-btn" 
+            onClick={() => setMobileOpen(!mobileOpen)}
+          >
+            ☰
+          </button>
+          
+          {/* Overlay */}
+          <div 
+            className={`sidebar-overlay ${mobileOpen ? "active" : ""}`} 
+            onClick={() => setMobileOpen(false)}
+          />
 
-          <ul className="nav-links">
-            {visibleNavItems.map((item) => (
-              <li key={item.path}>
-                <a href={item.path}>
-                  <img src={item.icon} alt={item.label} className="nav-icon" />
-                  <span>{item.label}</span>
-                </a>
-              </li>
-            ))}
-          </ul>
+          {/* Sidebar Navigation */}
+          <nav className={`sidebar ${theme} ${mobileOpen ? "mobile-open" : ""}`}>
+            <div className="nav-header">
+              <img src={logo} alt="RitLens Logo" />
+              <h2 className="logo">RitLens</h2>
+            </div>
 
-          <UserMenu />
-        </nav>
+            <ul className="nav-links">
+              {visibleNavItems.map((item) => (
+                <li key={item.path}>
+                  <a href={item.path}>
+                    <img src={item.icon} alt={item.label} className="nav-icon" />
+                    <span>{item.label}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+
+            <UserMenu currentTheme={theme} toggleTheme={toggleTheme} />
+          </nav>
+        </>
       )}
 
-      <div className="main-content" style={{ marginLeft: hideSidebar ? "0" : "" }}>
+      {/* ✅ 3. FIXED: Apply style to remove margin if sidebar is hidden */}
+      <div 
+        className="main-content" 
+        style={{ marginLeft: hideSidebar ? "0" : "", width: hideSidebar ? "100%" : "" }}
+      >
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Navigate to="/landingpage" replace />} />
@@ -269,7 +297,7 @@ function App() {
           <Route path="/signup" element={<SignUp />} />
           <Route path="/contact" element={<Contact />} />
 
-          {/* Common Routes (Accessible by all logged-in users) */}
+          {/* Protected Routes */}
           <Route path="/home" element={ <ProtectedRoute> <Home /> </ProtectedRoute>} />
           <Route path="/Explore" element={<ProtectedRoute><Explore /></ProtectedRoute>} />
           <Route path="/subject/:name" element={<ProtectedRoute><SubjectDetail /></ProtectedRoute>} />
@@ -280,7 +308,7 @@ function App() {
           <Route path="/my-courses" element={<ProtectedRoute><Mycourse /></ProtectedRoute>} />
           <Route path="/performance" element={<ProtectedRoute><PerformancePage /></ProtectedRoute>} />
 
-          {/* Admin & SuperAdmin Routes */}
+          {/* Admin Routes */}
           <Route path="/upload-subject" element={
             <ProtectedRoute>
               <RoleRoute allowedRoles={["admin", "superadmin"]}>
@@ -313,7 +341,7 @@ function App() {
             </ProtectedRoute>
           } />
 
-          {/* SuperAdmin Only Routes */}
+          {/* SuperAdmin Route */}
           <Route path="/manage-roles" element={
             <ProtectedRoute>
               <RoleRoute allowedRoles={["superadmin"]}>
@@ -321,7 +349,6 @@ function App() {
               </RoleRoute>
             </ProtectedRoute>
           } />
-
         </Routes>
       </div>
     </div>
@@ -338,7 +365,7 @@ export default function AppWrapper() {
   );
 }
 
-/* ---------- STYLES ---------- */
+/* ---------- STYLES (Using CSS Vars) ---------- */
 const styles = {
   userMenuContainer: {
     marginTop: "auto",
@@ -375,7 +402,7 @@ const styles = {
     marginRight: "10px",
   },
   userName: {
-    color: "#fff",
+    color: "var(--text-primary)",
     fontWeight: "600",
   },
   userDropdown: {
@@ -383,17 +410,20 @@ const styles = {
     bottom: "60px",
     left: "10px",
     width: "calc(100% - 20px)",
-    background: "rgba(0,0,0,0.9)",
+    background: "var(--menu-bg)",
     borderRadius: "15px",
     overflow: "hidden",
     zIndex: 1000,
     display: "flex",
     flexDirection: "column",
+    border: "1px solid var(--menu-border)",
+    boxShadow: "var(--menu-shadow)",
   },
   dropdownItem: {
-    padding: "10px 15px",
-    color: "#fff",
+    padding: "12px 15px",
+    color: "var(--text-primary)",
     cursor: "pointer",
-    borderBottom: "1px solid rgba(255,255,255,0.1)",
+    borderBottom: "1px solid var(--menu-border)",
+    fontSize: "0.95rem",
   },
-};
+};  
