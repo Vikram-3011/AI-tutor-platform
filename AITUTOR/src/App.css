@@ -8,149 +8,41 @@
   background-color: #f9fafc;
 }
 
-/* Sidebar Navigation */
+/* Sidebar Navigation (Desktop Default) */
 .sidebar {
   position: fixed;
   left: 0;
   top: 0;
   bottom: 0;
   width: 230px;
-  background: linear-gradient(#0c111b);
+  background: linear-gradient(#0c111b, #111827);
   color: #fff;
   display: flex;
   flex-direction: column;
   padding: 20px 10px;
   z-index: 1000;
   border-right: 1px solid rgba(255, 255, 255, 0.1);
+  transition: transform 0.3s ease-in-out;
+}
+
+/* Main Content */
+.main-content {
+  flex: 1;
+  margin-left: 230px; /* Space for sidebar on desktop */
+  height: 100vh;
+  overflow-y: auto;
+  background-color: #f9fafc;
+  padding: 0;
+  transition: margin-left 0.3s ease-in-out;
 }
 
 /* Sidebar Header */
 .nav-header {
   display: flex;
   align-items: center;
-  justify-content: center;
-  margin-bottom: 40px;
-}
-
-.logo-section {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.nav-logo-img {
-  width: 35px;
-  height: 35px;
-  border-radius: 8px;
-}
-
-.logo {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: #f9fefb;
-  margin: 0;
-}
-
-/* Nav Links */
-.nav-links {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.nav-links li {
-  margin: 15px 0;
-}
-
-.nav-links a {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 12px;
-  color: #ecf0f1;
-  text-decoration: none;
-  padding: 10px 12px;
-  border-radius: 6px;
-  transition: background 0.2s ease, transform 0.2s ease;
-}
-
-.nav-links a:hover {
-  background: #6f80ac;
-  color: #fff;
-  transform: translateX(5px);
-}
-
-/* Font Awesome Icons */
-.nav-links i {
-  font-size: 1.3rem;
-  width: 24px;
-  text-align: center;
-}
-
-/* Main Content */
-.main-content {
-  flex: 1;
-  margin-left: 230px; /* space for sidebar */
-  height: 100vh;
-  overflow-y: auto;
-  background-color: #f9fafc;
-  padding: 0; /* remove white space around content */
-}
-
-/* Remove any unwanted gaps on sides */
-.main-content > * {
-  margin: 0;
-  padding: 0;
-}
-
-/* Hide sidebar scroll bar */
-.sidebar::-webkit-scrollbar {
-  display: none;
-}
-
-/* Root styles */
-#root {
-  margin: 0;
-  padding: 0;
-  max-width: 100%;
-  text-align: left;
-}
-
-.nav-links li {
-  list-style: none;
-  margin-bottom: 10px;
-}
-
-.nav-links li a {
-  display: flex;
-  align-items: center;
-  text-decoration: none;
-  color: #fff; /* Make text white */
-  padding: 10px 15px;
-  border-radius: 10px;
-  transition: background 0.2s;
-}
-
-.nav-links li a:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.nav-links li a img.nav-icon {
-  width: 20px;      /* Smaller icon */
-  height: 20px;     /* Smaller icon */
-  margin-right: 10px;
-  filter: invert(1); /* Makes icon white if it is a dark PNG */
-}
-
-.nav-links li a span {
-  font-size: 16px;
-  vertical-align: middle;
-}
-.nav-header {
-  display: flex;
-  align-items: center;
   gap: 10px;
   padding: 15px;
+  margin-bottom: 20px;
 }
 
 .nav-header img {
@@ -162,5 +54,115 @@
 .nav-header h2 {
   color: #ebe773;
   margin: 0;
-  font-family: Georgia, 'Times New Roman', Times, serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+/* Nav Links */
+.nav-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.nav-links li {
+  margin: 10px 0;
+}
+
+.nav-links li a {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: #fff;
+  padding: 12px 15px;
+  border-radius: 10px;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.nav-links li a:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateX(5px);
+}
+
+.nav-links li a img.nav-icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 12px;
+  filter: invert(1);
+}
+
+.nav-links li a span {
+  font-size: 1rem;
+}
+
+/* Hide scrollbars */
+.sidebar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Mobile Menu Button (Hidden on Desktop) */
+.mobile-menu-btn {
+  display: none;
+}
+
+/* Overlay (Hidden on Desktop) */
+.sidebar-overlay {
+  display: none;
+}
+
+/* --------------------------------------------------- */
+/* 📱 MOBILE RESPONSIVENESS (Max Width 768px)          */
+/* --------------------------------------------------- */
+@media (max-width: 768px) {
+  /* 1. Adjust Content */
+  .main-content {
+    margin-left: 0; /* Remove margin so content uses full width */
+    width: 100%;
+  }
+
+  /* 2. Hide Sidebar by Default */
+  .sidebar {
+    transform: translateX(-100%);
+    width: 250px; /* Slightly wider for better touch targets */
+    box-shadow: 5px 0 15px rgba(0,0,0,0.5);
+  }
+
+  /* 3. Show Sidebar when Active */
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  /* 4. Show Mobile Toggle Button */
+  .mobile-menu-btn {
+    display: block;
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 2000; /* Above sidebar overlay but below sidebar */
+    background: rgba(15, 23, 42, 0.8);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.2);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    backdrop-filter: blur(5px);
+  }
+
+  /* 5. Overlay when menu is open */
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 900; /* Below sidebar, above content */
+    backdrop-filter: blur(3px);
+  }
+
+  .sidebar-overlay.active {
+    display: block;
+  }
 }

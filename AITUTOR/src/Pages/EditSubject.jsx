@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { API_BASE_URL } from "../config";
+
+// ✅ FIXED: Define API URL directly to resolve build error
+const API_BASE_URL = "http://localhost:5000";
 
 function EditSubject() {
   const { id } = useParams();
@@ -30,8 +32,8 @@ function EditSubject() {
     fetchSubject();
   }, [id]);
 
-  if (loading) return <p>Loading...</p>;
-  if (!subject) return <p>Subject not found.</p>;
+  if (loading) return <div style={styles.page}><p style={{color:"#fff"}}>Loading...</p></div>;
+  if (!subject) return <div style={styles.page}><p style={{color:"#fff"}}>Subject not found.</p></div>;
 
   const handleIntroChange = (field, value) => {
     setSubject({
@@ -46,7 +48,6 @@ function EditSubject() {
     setSubject({ ...subject, topics: updatedTopics });
   };
 
-  //  Fix: examples are objects with description and code
   const handleExampleChange = (topicIndex, exampleIndex, field, value) => {
     const updatedTopics = [...subject.topics];
     const examples = updatedTopics[topicIndex].examples || [];
@@ -142,7 +143,7 @@ function EditSubject() {
             <>
               {subject.topics[currentTopic - 1] && (
                 <div style={styles.topicCard}>
-                  <label style={styles.label}>Title</label>
+                  <label style={styles.label}>Topic Title</label>
                   <input
                     style={styles.input}
                     value={subject.topics[currentTopic - 1].title}
@@ -171,32 +172,34 @@ function EditSubject() {
                   {subject.topics[currentTopic - 1].examples?.map(
                     (ex, exIdx) => (
                       <div key={exIdx} style={styles.exampleBlock}>
-                        <input
-                          placeholder="Description"
-                          style={styles.inputSmall}
-                          value={ex.description || ""}
-                          onChange={(e) =>
-                            handleExampleChange(
-                              currentTopic - 1,
-                              exIdx,
-                              "description",
-                              e.target.value
-                            )
-                          }
-                        />
-                        <input
-                          placeholder="Code"
-                          style={styles.inputSmall}
-                          value={ex.code || ""}
-                          onChange={(e) =>
-                            handleExampleChange(
-                              currentTopic - 1,
-                              exIdx,
-                              "code",
-                              e.target.value
-                            )
-                          }
-                        />
+                        <div style={styles.inputsContainer}>
+                            <input
+                            placeholder="Description"
+                            style={styles.inputSmall}
+                            value={ex.description || ""}
+                            onChange={(e) =>
+                                handleExampleChange(
+                                currentTopic - 1,
+                                exIdx,
+                                "description",
+                                e.target.value
+                                )
+                            }
+                            />
+                            <input
+                            placeholder="Code Snippet"
+                            style={styles.inputSmall}
+                            value={ex.code || ""}
+                            onChange={(e) =>
+                                handleExampleChange(
+                                currentTopic - 1,
+                                exIdx,
+                                "code",
+                                e.target.value
+                                )
+                            }
+                            />
+                        </div>
                         <button
                           type="button"
                           style={styles.deleteBtnSmall}
@@ -204,26 +207,29 @@ function EditSubject() {
                             removeExample(currentTopic - 1, exIdx)
                           }
                         >
-                          ❌
+                          ✕
                         </button>
                       </div>
                     )
                   )}
-                  <button
-                    type="button"
-                    style={styles.addBtnSmall}
-                    onClick={() => addExample(currentTopic - 1)}
-                  >
-                    + Add Example
-                  </button>
+                  
+                  <div style={styles.actionRow}>
+                    <button
+                        type="button"
+                        style={styles.addBtnSmall}
+                        onClick={() => addExample(currentTopic - 1)}
+                    >
+                        + Add Example
+                    </button>
 
-                  <button
-                    type="button"
-                    style={styles.deleteBtn}
-                    onClick={() => removeTopic(currentTopic - 1)}
-                  >
-                     Remove Topic
-                  </button>
+                    <button
+                        type="button"
+                        style={styles.deleteBtn}
+                        onClick={() => removeTopic(currentTopic - 1)}
+                    >
+                        Remove Topic
+                    </button>
+                  </div>
                 </div>
               )}
             </>
@@ -256,7 +262,7 @@ function EditSubject() {
                 style={styles.primaryBtn}
                 onClick={handleSubmit}
               >
-                 Save
+                Save Changes
               </button>
             )}
           </div>
@@ -266,7 +272,7 @@ function EditSubject() {
   );
 }
 
-//  Clean, compact styles
+// 💅 Updated Responsive Styles
 const styles = {
   page: {
     minHeight: "100vh",
@@ -274,111 +280,165 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    padding: 40,
+    padding: "40px 20px", // Less padding on sides for mobile
+    boxSizing: "border-box",
   },
-  title: { color: "#fff", fontSize: "1.8rem", marginBottom: 20 },
+  title: { color: "#fff", fontSize: "1.8rem", marginBottom: 20, textAlign: "center" },
   card: {
     width: "100%",
-    maxWidth: 800,
+    maxWidth: "800px",
     background: "rgba(255,255,255,0.05)",
     borderRadius: 12,
-    padding: 20,
+    padding: "20px",
     backdropFilter: "blur(10px)",
+    boxSizing: "border-box", // Ensures padding doesn't overflow width
   },
-  label: { color: "#fff", marginBottom: 5, fontWeight: 600 },
+  form: {
+    width: "100%",
+  },
+  label: { 
+      color: "#93c5fd", 
+      marginBottom: 8, 
+      marginTop: 15, 
+      fontWeight: "600", 
+      display: "block" 
+  },
   input: {
     width: "100%",
-    padding: 10,
+    padding: "12px",
     borderRadius: 8,
     background: "rgba(255,255,255,0.1)",
     border: "1px solid rgba(255,255,255,0.2)",
     color: "#fff",
-  },
-  inputSmall: {
-    flex: 1,
-    padding: 8,
-    borderRadius: 6,
-    border: "1px solid rgba(255,255,255,0.2)",
-    background: "rgba(255,255,255,0.1)",
-    color: "#fff",
+    fontSize: "1rem",
+    boxSizing: "border-box",
   },
   textarea: {
     width: "100%",
-    minHeight: 80,
-    padding: 10,
+    minHeight: "100px",
+    padding: "12px",
     borderRadius: 8,
     border: "1px solid rgba(255,255,255,0.2)",
     background: "rgba(255,255,255,0.1)",
     color: "#fff",
     resize: "vertical",
+    fontSize: "1rem",
+    fontFamily: "inherit",
+    boxSizing: "border-box",
   },
   topicCard: {
     display: "flex",
     flexDirection: "column",
     gap: 10,
-    padding: 15,
-    background: "rgba(255,255,255,0.05)",
+    padding: "15px",
+    background: "rgba(0,0,0,0.2)", // Slightly darker background for topics
     borderRadius: 10,
+    border: "1px solid rgba(255,255,255,0.05)",
   },
+  
+  /* ✅ RESPONSIVE EXAMPLE BLOCK */
   exampleBlock: {
     display: "flex",
-    gap: 8,
-    alignItems: "center",
+    alignItems: "center", // Center vertically
+    gap: "10px",
+    background: "rgba(255,255,255,0.05)",
+    padding: "10px",
+    borderRadius: "8px",
+    marginBottom: "10px",
+  },
+  inputsContainer: {
+      flex: 1,
+      display: "flex",
+      gap: "10px",
+      flexWrap: "wrap", // Allows wrapping on mobile
+  },
+  inputSmall: {
+    flex: "1 1 150px", // Grow, Shrink, Basis (min-width)
+    padding: "10px",
+    borderRadius: 6,
+    border: "1px solid rgba(255,255,255,0.2)",
+    background: "rgba(255,255,255,0.1)",
+    color: "#fff",
+    fontSize: "0.9rem",
+    minWidth: "140px", // Ensures it doesn't get too small
+  },
+  
+  /* Buttons */
+  actionRow: {
+      display: "flex",
+      justifyContent: "space-between",
+      marginTop: "10px",
+      flexWrap: "wrap",
+      gap: "10px"
   },
   addBtn: {
     background: "#3b82f6",
     color: "#fff",
-    padding: "8px 15px",
+    padding: "10px 20px",
     border: "none",
     borderRadius: 8,
     cursor: "pointer",
+    marginTop: "20px",
+    fontWeight: "600",
+    width: "100%",
   },
   addBtnSmall: {
-    background: "#3b82f6",
-    color: "#fff",
-    border: "none",
-    padding: "6px 12px",
-    borderRadius: 6,
-    cursor: "pointer",
-    alignSelf: "flex-start",
-  },
-  deleteBtn: {
-    background: "#ef4444",
+    background: "#2563eb",
     color: "#fff",
     border: "none",
     padding: "8px 15px",
+    borderRadius: 6,
+    cursor: "pointer",
+    fontSize: "0.9rem",
+  },
+  deleteBtn: {
+    background: "rgba(239, 68, 68, 0.2)",
+    color: "#fca5a5",
+    border: "1px solid #ef4444",
+    padding: "8px 15px",
     borderRadius: 8,
     cursor: "pointer",
-    alignSelf: "flex-start",
+    fontSize: "0.9rem",
   },
   deleteBtnSmall: {
     background: "#ef4444",
     color: "#fff",
     border: "none",
-    padding: "5px 10px",
-    borderRadius: 6,
+    width: "32px",
+    height: "32px",
+    borderRadius: "50%",
     cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "1rem",
+    flexShrink: 0, // Prevents button from being squashed
   },
   navButtons: {
     display: "flex",
     justifyContent: "space-between",
-    marginTop: 20,
+    marginTop: 30,
+    gap: "15px",
   },
   primaryBtn: {
-    background: "#2563eb",
+    background: "linear-gradient(90deg, #2563eb, #3b82f6)",
     color: "#fff",
     border: "none",
     borderRadius: 25,
-    padding: "10px 25px",
+    padding: "12px 30px",
     cursor: "pointer",
+    fontWeight: "600",
+    fontSize: "1rem",
+    minWidth: "140px",
   },
   secondaryBtn: {
-    background: "rgba(255,255,255,0.15)",
-    color: "#fff",
-    border: "1px solid rgba(255,255,255,0.25)",
+    background: "transparent",
+    color: "#cbd5e1",
+    border: "1px solid rgba(255,255,255,0.2)",
     borderRadius: 25,
-    padding: "10px 20px",
+    padding: "12px 25px",
     cursor: "pointer",
+    fontSize: "1rem",
   },
 };
 
