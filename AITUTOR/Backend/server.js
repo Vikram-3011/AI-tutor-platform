@@ -17,8 +17,8 @@ app.use(express.json());
 // Connect to MongoDB
 mongoose
   .connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log("✅ Connected to MongoDB"))
-  .catch((err) => console.error("❌ MongoDB connection error:", err));
+  .then(() => console.log(" Connected to MongoDB"))
+  .catch((err) => console.error(" MongoDB connection error:", err));
 
 // ---------------------
 // Subject Schema
@@ -64,7 +64,7 @@ const User = mongoose.model("User", userSchema);
 
 
 // ---------------------
-// ✅ SUPABASE ROLE MANAGEMENT (Admin + SuperAdmin)
+//  SUPABASE ROLE MANAGEMENT (Admin + SuperAdmin)
 // ---------------------
 
 
@@ -116,7 +116,7 @@ const Quiz = mongoose.model("Quiz", quizSchema);
 
 
 // ---------------------
-// ✅ MyCourses Schema (Add this before using it)
+//  MyCourses Schema (Add this before using it)
 // ---------------------
 const myCourseSchema = new mongoose.Schema({
   userEmail: { type: String, required: true },
@@ -139,7 +139,7 @@ app.get("/", (req, res) => {
   res.send("API is running...");
 });
 
-// ✅ Subject Routes
+//  Subject Routes
 app.get("/api/subjects", async (req, res) => {
   try {
     const subjects = await Subject.find({}, "name");
@@ -238,10 +238,10 @@ app.delete("/api/subjects/:id", async (req, res) => {
   }
 });
 // ---------------------
-// ✅ USER PROFILE ROUTES
+//  USER PROFILE ROUTES
 // ---------------------
 
-// ✅ Auto-create profile on sign in if not found
+//  Auto-create profile on sign in if not found
 app.post("/api/create-profile", async (req, res) => {
   try {
     const { email } = req.body;
@@ -254,9 +254,9 @@ app.post("/api/create-profile", async (req, res) => {
     if (!user) {
       user = new User({ email });
       await user.save();
-      console.log("🟢 Profile created for:", email);
+      console.log(" Profile created for:", email);
     } else {
-      console.log("✅ Profile already exists for:", email);
+      console.log(" Profile already exists for:", email);
     }
 
     res.json({ message: "Profile verified or created", user });
@@ -266,7 +266,7 @@ app.post("/api/create-profile", async (req, res) => {
   }
 });
 
-// ✅ Fetch profile by email
+//  Fetch profile by email
 app.get("/api/profile/:email", async (req, res) => {
   const { email } = req.params;
   try {
@@ -278,8 +278,8 @@ app.get("/api/profile/:email", async (req, res) => {
   }
 });
 
-// ✅ Update profile by email
-// ✅ Update profile by email (UPDATED)
+//  Update profile by email
+//  Update profile by email (UPDATED)
 app.put("/api/profile/:email", async (req, res) => {
   const { email } = req.params;
   const { name, bio, avatar, dob, phone } = req.body;
@@ -306,7 +306,7 @@ app.put("/api/profile/:email", async (req, res) => {
 
 
 
-// ✅ Verify if requester is Super Admin
+//  Verify if requester is Super Admin
 const verifySuperAdmin = async (req, res, next) => {
   const { requesterEmail } = req.body;
 
@@ -325,7 +325,7 @@ const verifySuperAdmin = async (req, res, next) => {
   next();
 };
 
-// ✅ Create Super Admin manually (only once)
+//  Create Super Admin manually (only once)
 app.post("/api/roles/create-superadmin", async (req, res) => {
   try {
     const { name, email } = req.body;
@@ -355,7 +355,7 @@ app.post("/api/roles/create-superadmin", async (req, res) => {
   }
 });
 
-// ✅ Get All Users (for role management)
+//  Get All Users (for role management)
 app.get("/api/roles/all", async (req, res) => {
   try {
     const { data, error } = await supabase
@@ -377,7 +377,7 @@ app.get("/api/roles/all", async (req, res) => {
   }
 });
 
-// ✅ Promote to Admin (Super Admin only)
+//  Promote to Admin (Super Admin only)
 app.post("/api/roles/promote", verifySuperAdmin, async (req, res) => {
   try {
     const { targetEmail } = req.body;
@@ -408,7 +408,7 @@ app.post("/api/roles/promote", verifySuperAdmin, async (req, res) => {
   }
 });
 
-// ✅ Demote to User (Super Admin only)
+//  Demote to User (Super Admin only)
 app.post("/api/roles/demote", verifySuperAdmin, async (req, res) => {
   try {
     const { targetEmail } = req.body;
@@ -439,7 +439,7 @@ app.post("/api/roles/demote", verifySuperAdmin, async (req, res) => {
   }
 });
 
-// ✅ Create or Verify Role on Login/Register
+//  Create or Verify Role on Login/Register
 app.post("/api/roles/register-login", async (req, res) => {
   try {
     const { email, name } = req.body;
@@ -469,7 +469,7 @@ app.post("/api/roles/register-login", async (req, res) => {
 });
 
 
-// ✅ Create/Update Quiz for a topic
+//  Create/Update Quiz for a topic
 app.post("/api/quiz", async (req, res) => {
   try {
     const { subjectName, topicTitle, questions } = req.body;
@@ -489,7 +489,7 @@ app.post("/api/quiz", async (req, res) => {
   }
 });
 
-// ✅ Get Quiz for a topic
+//  Get Quiz for a topic
 app.get("/api/quiz/:subjectName/:topicTitle", async (req, res) => {
   try {
     const { subjectName, topicTitle } = req.params;
@@ -533,7 +533,7 @@ app.get("/api/quiz/attempt/:userEmail/:subjectName/:topicTitle", async (req, res
   }
 });
 
-// ✅ Get all quiz progress for a user under a subject
+//  Get all quiz progress for a user under a subject
 app.get("/api/quiz/progress/:userEmail/:subjectName", async (req, res) => {
   try {
     const { userEmail, subjectName } = req.params;
@@ -544,7 +544,7 @@ app.get("/api/quiz/progress/:userEmail/:subjectName", async (req, res) => {
   }
 });
 
-// ✅ Get subject performance summary for a user
+//  Get subject performance summary for a user
 app.get("/api/quiz/summary/:userEmail/:subjectName", async (req, res) => {
   try {
     const { userEmail, subjectName } = req.params;
@@ -569,57 +569,61 @@ app.get("/api/quiz/summary/:userEmail/:subjectName", async (req, res) => {
 });
 
 
+// ---------------------
+// CHATBOT ROUTE (Secure Backend)
+// ---------------------
+// Ensure you have dotenv configured: require('dotenv').config();
 
-// ---------------------
-// CHATBOT ROUTE
-// ---------------------
 app.post("/api/chat", async (req, res) => {
   const { message } = req.body;
-  if (!message) return res.status(400).json({ reply: "Message is required" });
+
+  if (!message) {
+    return res.status(400).json({ reply: "Message is required" });
+  }
 
   try {
+    const apiKey = process.env.GEMINI_API_KEY;
+    // Use a specific model like gemini-1.5-flash or gemini-pro
+    const model = "gemini-1.5-flash"; 
+    
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta2/models/${process.env.GEMINI_MODEL}:generate`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.GEMINI_API_KEY}`,
         },
         body: JSON.stringify({
-          prompt: { text: message },
-          temperature: 0.7,
-          max_output_tokens: 500,
+          contents: [
+            {
+              parts: [{ text: message }]
+            }
+          ]
         }),
       }
     );
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Gemini API error:", errorText);
-      return res.status(500).json({ reply: "AI service error" });
-    }
-
     const data = await response.json();
 
-    // ✅ Handle different response structures
-    let aiReply = data?.candidates?.[0]?.content; // old structure
-    if (!aiReply && data?.output?.length) {
-      aiReply = data.output[0]?.content || data.output[0]?.text; // new Gemini/PaLM structure
+    if (!response.ok) {
+      console.error("Gemini API Error:", data);
+      return res.status(500).json({ reply: "AI service encountered an error." });
     }
 
+    // Extract text from the Gemini response structure
+    const aiReply = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
     if (!aiReply) {
-      console.error("Gemini response invalid:", data);
-      return res.json({ reply: "Sorry, AI could not generate a response." });
+      return res.json({ reply: "I'm not sure how to answer that." });
     }
 
     res.json({ reply: aiReply });
+
   } catch (error) {
-    console.error("Chatbot error:", error);
-    res.status(500).json({ reply: "Error connecting to AI service" });
+    console.error("Server Chatbot Error:", error);
+    res.status(500).json({ reply: "Internal server error connecting to AI." });
   }
 });
-
 
 // Add subject to user's MyCourses
 app.post("/api/mycourses/add", async (req, res) => {

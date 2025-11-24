@@ -16,10 +16,12 @@ function Profile() {
     phone: "",
   });
   const [message, setMessage] = useState("");
+  const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
+        // 1. Get Supabase User
         const { data: { user: supaUser } } = await supabase.auth.getUser();
         if (!supaUser) {
           navigate("/signin");
@@ -27,8 +29,11 @@ function Profile() {
         }
         setUser(supaUser);
 
+        // 2. Fetch Profile from Custom API
         const emailEncoded = encodeURIComponent(supaUser.email);
         let res = await fetch(`${API_BASE_URL}/api/profile/${emailEncoded}`);
+
+        // 3. Handle Profile Creation if 404
         if (res.status === 404) {
           res = await fetch(`${API_BASE_URL}/api/create-profile`, {
             method: "POST",
@@ -36,7 +41,7 @@ function Profile() {
             body: JSON.stringify({ email: supaUser.email }),
           });
           const data = await res.json();
-          setProfile({ ...profile, email: data.user.email });
+          setProfile(p => ({ ...p, email: data.user.email }));
         } else {
           const data = await res.json();
           setProfile({
@@ -62,18 +67,27 @@ function Profile() {
 
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfile({ ...profile, avatar: reader.result });
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    const maxSize = 200 * 1024; // 200 KB
+
+    if (file.size > maxSize) {
+      setMessage("Image size must be below 200 KB ");
+      setTimeout(() => { setMessage(""); }, 3000);
+      return;
     }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setProfile((prev) => ({ ...prev, avatar: reader.result }));
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
+    setIsUpdating(true);
 
     try {
       const emailEncoded = encodeURIComponent(user.email);
@@ -84,15 +98,20 @@ function Profile() {
       });
 
       if (!res.ok) throw new Error("Failed to update profile");
-      setMessage("Profile updated successfully!");
-      // Automatically hide the message after 3 seconds
+      setMessage("Profile updated successfully! ");
       setTimeout(() => setMessage(""), 3000);
     } catch (err) {
       console.error(err);
-      setMessage("Error updating profile");
+      setMessage("Error updating profile ");
       setTimeout(() => setMessage(""), 3000);
+    } finally {
+      setIsUpdating(false);
     }
   };
+
+  const getInitial = () => profile.email?.[0]?.toUpperCase() || "?";
+
+  // --- RENDER LOGIC ---
 
   if (loading)
     return (
@@ -102,21 +121,15 @@ function Profile() {
       </div>
     );
 
-  const getInitial = () => profile.email?.[0]?.toUpperCase() || "?";
-
   return (
     <div style={styles.page}>
-      {/* Title on top */}
-      <h1 style={styles.title}>Your Profile</h1>
+      <h1 style={styles.title}> User Profile</h1>
 
       <div style={styles.card}>
+        {/* --- Avatar Section --- */}
         <div style={styles.avatarSection}>
           {profile.avatar ? (
-            <img
-              src={profile.avatar}
-              alt="Avatar"
-              style={styles.avatar}
-            />
+            <img src={profile.avatar} alt="Avatar" style={styles.avatar} />
           ) : (
             <div style={styles.avatarPlaceholder}>{getInitial()}</div>
           )}
@@ -124,78 +137,84 @@ function Profile() {
             Upload Avatar
             <input
               type="file"
+              name="avatar"
               accept="image/*"
               onChange={handleAvatarChange}
               style={{ display: "none" }}
             />
           </label>
         </div>
-
-
-
-
+        
         <form onSubmit={handleSubmit} style={styles.form}>
-          <label style={styles.label}>Name</label>
-          <input
-            type="text"
-            name="name"
-            value={profile.name}
-            onChange={handleChange}
-            placeholder="Your name"
-            style={styles.input}
-            required
-          />
+          {/* --- Profile Fields --- */}
+          <div style={styles.formGroup}>
+            <label style={styles.label} htmlFor="name">Name</label>
+            <input
+              type="text" id="name" name="name"
+              value={profile.name} onChange={handleChange}
+              placeholder="Your name" style={styles.input} required
+            />
+          </div>
 
-          <label style={styles.label}>Email</label>
-          <input
-            type="email"
-            name="email"
-            value={profile.email}
-            disabled
-            style={{ ...styles.input, backgroundColor: "rgba(255,255,255,0.15)" }}
-          />
-
-          <label style={styles.label}>Bio</label>
-          <textarea
-            name="bio"
-            value={profile.bio}
-            onChange={handleChange}
-            placeholder="Tell us about yourself..."
-            style={styles.textarea}
-          />
-
-          <label style={styles.label}>Date of Birth</label>
-          <input
-            type="date"
-            name="dob"
-            value={profile.dob}
-            onChange={handleChange}
-            style={styles.input}
-          />
-
-          <label style={styles.label}>Phone Number</label>
-          <input
-            type="text"
-            name="phone"
-            value={profile.phone}
-            onChange={handleChange}
-            placeholder="Your phone number"
-            style={styles.input}
-          />
+          <div style={styles.formGroup}>
+            <label style={styles.label} htmlFor="email">Email</label>
+            <input
+              type="email" id="email" name="email"
+              value={profile.email} disabled
+              style={{ ...styles.input, ...styles.disabledInput }}
+            />
+          </div>
           
+          <div style={styles.twoColumnGrid}>
+            <div style={styles.formGroup}>
+                <label style={styles.label} htmlFor="dob">Date of Birth</label>
+                <input
+                    type="date" id="dob" name="dob"
+                    value={profile.dob} onChange={handleChange}
+                    style={styles.input}
+                />
+            </div>
+            <div style={styles.formGroup}>
+                <label style={styles.label} htmlFor="phone">Phone Number</label>
+                <input
+                    type="number" id="phone" name="phone"
+                    value={profile.phone} onChange={handleChange}
+                    placeholder="Your phone number" style={styles.input}
+                />
+            </div>
+          </div>
 
-          <button type="submit" style={styles.button}>
-            Save Profile
+          <div style={styles.formGroup}>
+            <label style={styles.label} htmlFor="bio">Bio</label>
+            <textarea
+              id="bio" name="bio"
+              value={profile.bio} onChange={handleChange}
+              placeholder="Tell us about yourself..." style={styles.textarea}
+            />
+          </div>
+
+          {/* --- Action Buttons --- */}
+          <button type="submit" style={styles.button} disabled={isUpdating}>
+            {isUpdating ? "Saving..." : "Save Profile Changes"}
           </button>
           
+          <div style={styles.buttonGroup}>
             <button
-            type="button"
-            style={{ ...styles.button, marginTop: "10px", background: "linear-gradient(135deg, #444, #222)" }}
-            onClick={() => navigate("/change-password")}
-          >
-            Change Password
-          </button>
-          {/* Message below the button */}
+              type="button"
+              style={styles.secondaryButton}
+              onClick={() => navigate("/change-password")}
+            >
+               Change Password
+            </button>
+            <button
+              type="button"
+              style={styles.contactButton}
+              onClick={() => navigate("/contact")} // Assuming your contact route is /contact
+            >
+               Admin Access
+            </button>
+          </div>
+          
           {message && <p style={styles.message}>{message}</p>}
         </form>
       </div>
@@ -203,147 +222,221 @@ function Profile() {
   );
 }
 
-/* --- PREMIUM LUXURY STYLES --- */
+// ----------------------------------------------------
+// --- RESTRUCTURED & ENHANCED STYLES ---
+// ----------------------------------------------------
 const styles = {
-  page: {
-    minHeight: "100vh",
-    display: "flex",
-    flexDirection: "column", // ensure title on top
-    alignItems: "center",
-    background: "linear-gradient(135deg, #0c111b, #1b2430)",
-    fontFamily: "'Poppins', sans-serif",
-    padding: "40px 20px",
-  },
-  title: {
-    fontSize: "2.5rem",
-    color: "#fef9f3",
-    marginBottom: "25px",
-    fontWeight: "700",
-    textAlign: "center",
-    textShadow: "0 2px 10px rgba(0,0,0,0.6)",
-    zIndex: 10,
-  },
-  card: {
-    width: "100%",
-    maxWidth: "520px",
-    background: "rgba(255,255,255,0.05)",
-    padding: "35px",
-    borderRadius: "20px",
-    backdropFilter: "blur(20px)",
-    boxShadow: "0 15px 40px rgba(0,0,0,0.7)",
-    border: "1px solid rgba(255,255,255,0.15)",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-  },
-  avatarSection: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    marginBottom: "25px",
-  },
-  avatar: {
-    width: "110px",
-    height: "110px",
-    borderRadius: "50%",
-    objectFit: "cover",
-    border: "3px solid rgba(255, 215, 0, 0.7)",
-    boxShadow: "0 6px 20px rgba(0,0,0,0.6)",
-    marginBottom: "10px",
-    transition: "all 0.3s ease",
-  },
-  avatarPlaceholder: {
-    width: "110px",
-    height: "110px",
-    borderRadius: "50%",
-    background: "linear-gradient(145deg, #333, #111)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: "2rem",
-    color: "#ffd700",
-    marginBottom: "10px",
-    boxShadow: "0 6px 20px rgba(0,0,0,0.6)",
-  },
-  uploadLabel: {
-    color: "#ffd700",
-    fontWeight: "600",
-    cursor: "pointer",
-    fontSize: "0.95rem",
-  },
-  form: { display: "flex", flexDirection: "column", width: "100%", gap: "18px" },
-  label: { color: "#fef9f3", fontWeight: "600", fontSize: "0.9rem" },
-  input: {
-    padding: "12px 16px",
-    borderRadius: "12px",
-    border: "1px solid rgba(255,255,255,0.2)",
-    background: "rgba(255,255,255,0.08)",
-    color: "#fef9f3",
-    outline: "none",
-    fontSize: "1rem",
-    backdropFilter: "blur(5px)",
-    transition: "all 0.3s ease",
-  },
-  textarea: {
-    padding: "12px 16px",
-    borderRadius: "12px",
-    border: "1px solid rgba(255,255,255,0.2)",
-    background: "rgba(255,255,255,0.08)",
-    color: "#fef9f3",
-    outline: "none",
-    fontSize: "1rem",
-    minHeight: "90px",
-    backdropFilter: "blur(5px)",
-    transition: "all 0.3s ease",
-  },
-  button: {
-    padding: "14px",
-    borderRadius: "30px",
-    border: "none",
-    background: "linear-gradient(135deg, #222, #444)",
-    color: "#ffd700",
-    fontWeight: "600",
-    cursor: "pointer",
-    fontSize: "1rem",
-    transition: "all 0.3s ease",
-    boxShadow: "0 8px 25px rgba(0,0,0,0.6)",
-  },
-  message: {
-    color: "#ffd700",
-    marginTop: "10px",
-    textAlign: "center",
-    fontWeight: "500",
-  },
-  loadingContainer: {
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
-    height: "100vh",
-    background: "linear-gradient(145deg, #0c111b, #1b2430)",
-  },
-  spinner: {
-    width: "50px",
-    height: "50px",
-    border: "5px solid rgba(255,255,255,0.2)",
-    borderTop: "5px solid #ffd700",
-    borderRadius: "50%",
-    animation: "spin 1s linear infinite",
-  },
-  loadingText: {
-    marginTop: "15px",
-    fontSize: "1.2rem",
-    color: "#fef9f3",
-  },
+    page: {
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        // Soft, deep background
+        background: "linear-gradient(135deg, #0f172a, #1e293b)", 
+        fontFamily: "'Inter', sans-serif",
+        padding: "40px 20px",
+    },
+    title: {
+        fontSize: "2.8rem",
+        color: "#f8faff",
+        marginBottom: "35px",
+        fontWeight: "800",
+        textAlign: "center",
+        textShadow: "0 4px 15px rgba(0,0,0,0.5)",
+    },
+    card: {
+        width: "100%",
+        maxWidth: "600px", // Increased max width for better form layout
+        background: "rgba(255, 255, 255, 0.08)", // Lighter card background
+        padding: "40px",
+        borderRadius: "24px",
+        backdropFilter: "blur(15px)",
+        boxShadow: "0 20px 50px rgba(0,0,0,0.8)",
+        border: "1px solid rgba(36, 113, 221, 0.29)",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center", 
+    },
+    avatarSection: {
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        marginBottom: "30px",
+    },
+    avatar: {
+        width: "120px",
+        height: "120px",
+        borderRadius: "50%",
+        objectFit: "cover",
+        // Vibrant gold border
+        border: "4px solid #fffffeff", 
+        boxShadow: "0 8px 30px rgba(0,0,0,0.6)",
+        marginBottom: "15px",
+        transition: "all 0.3s ease",
+    },
+    avatarPlaceholder: {
+        width: "120px",
+        height: "120px",
+        borderRadius: "50%",
+        background: "linear-gradient(145deg, #334155, #1e293b)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: "3rem",
+        color: "#f5f5f5ff", // Gold text color
+        marginBottom: "15px",
+        boxShadow: "0 8px 30px rgba(0,0,0,0.6)",
+    },
+    uploadLabel: {
+        color: "#a8a8a8",
+        fontWeight: "500",
+        cursor: "pointer",
+        fontSize: "0.95rem",
+        padding: "5px 10px",
+        borderRadius: "8px",
+        border: "1px dashed #4b5563",
+    },
+    form: { 
+        display: "flex", 
+        flexDirection: "column", 
+        width: "100%", 
+        gap: "18px" 
+    },
+    formGroup: {
+        display: "flex",
+        flexDirection: "column",
+        gap: "6px",
+    },
+    twoColumnGrid: {
+        display: "grid",
+        gridTemplateColumns: "1fr 1fr",
+        gap: "20px",
+    },
+    label: { 
+        color: "#e2e8f0", 
+        fontWeight: "600", 
+        fontSize: "0.9rem" 
+    },
+    input: {
+        padding: "12px 16px",
+        borderRadius: "10px",
+        border: "1px solid #4b5563",
+        background: "rgba(231, 229, 229, 0.05)",
+        color: "#f8faff",
+        outline: "none",
+        fontSize: "1rem",
+        transition: " 0.3s ease",
+    },
+    disabledInput: {
+        backgroundColor: "rgba(49, 49, 49, 0.4)", // Darker gray for disabled
+        cursor: "not-allowed",
+    },
+    textarea: {
+        padding: "12px 16px",
+        borderRadius: "10px",
+        border: "1px solid #4b5563",
+        background: "rgba(255, 255, 255, 0.05)",
+        color: "#f8faff",
+        outline: "none",
+        fontSize: "1rem",
+        minHeight: "100px",
+        resize: "vertical",
+        transition: " ",
+    },
+    button: {
+        padding: "15px",
+        borderRadius: "10px",
+        border: "none",
+        // Primary Save Button Style (Orange/Gold)
+        background: "linear-gradient(90deg, #2184daff, #345ceaff)", 
+        color: "#fff",
+        fontWeight: "700",
+        cursor: "pointer",
+        fontSize: "1rem",
+        marginTop: "10px",
+        boxShadow: "0 4px 15px rgba(36, 35, 35, 0.5)",
+        transition: "background 0.3s ease, transform 0.1s ease",
+    },
+    buttonGroup: {
+        display: "flex",
+        gap: "10px",
+        marginTop: "10px",
+    },
+    secondaryButton: {
+        flex: 1,
+        padding: "15px",
+        borderRadius: "10px",
+        border: "none",
+        background: "linear-gradient(135deg, #334155, #1e293b)",
+        color: "#e2e8f0",
+        fontWeight: "600",
+        cursor: "pointer",
+        fontSize: "1rem",
+        transition: "background 0.3s ease",
+    },
+    contactButton: {
+        flex: 1,
+        padding: "15px",
+        borderRadius: "10px",
+        border: "none",
+        // Contact Button Style (Subtle Blue)
+        background: "linear-gradient(135deg, #0ea5e9, #38bdf8)", 
+        color: "#fff",
+        fontWeight: "600",
+        cursor: "pointer",
+        fontSize: "1rem",
+        transition: "background 0.3s ease",
+    },
+    message: {
+        color: "#3665e7ff",
+        marginTop: "15px",
+        textAlign: "center",
+        fontWeight: "600",
+        fontSize: "0.95rem",
+    },
+    // --- Loading Styles (Simplified) ---
+    loadingContainer: {
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100vh",
+        background: "linear-gradient(145deg, #0f172a, #1e293b)",
+    },
+    spinner: {
+        width: "40px",
+        height: "40px",
+        border: "4px solid rgba(255,255,255,0.2)",
+        borderTop: "4px solid #3760dbff",
+        borderRadius: "50%",
+        animation: "spin 0.8s linear infinite",
+    },
+    loadingText: {
+        marginTop: "15px",
+        fontSize: "1.1rem",
+        color: "#e2e8f0",
+    },
 };
 
-// Spinner animation
+// Add the spin animation globally
 const styleSheet = document.createElement("style");
 styleSheet.innerHTML = `
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}`;
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Enhancing input focus */
+input:focus, textarea:focus {
+    border-color: #1f58ddff !important;
+    box-shadow: 0 0 0 2px rgba(61, 141, 215, 0.3);
+}
+
+/* Button Hover Effects */
+button:not(:disabled):hover {
+    filter: brightness(1.1);
+}
+`;
 document.head.appendChild(styleSheet);
 
 export default Profile;

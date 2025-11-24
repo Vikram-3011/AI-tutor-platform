@@ -46,7 +46,7 @@ function EditSubject() {
     setSubject({ ...subject, topics: updatedTopics });
   };
 
-  // ✅ Fix: examples are objects with description and code
+  //  Fix: examples are objects with description and code
   const handleExampleChange = (topicIndex, exampleIndex, field, value) => {
     const updatedTopics = [...subject.topics];
     const examples = updatedTopics[topicIndex].examples || [];
@@ -99,11 +99,11 @@ function EditSubject() {
         body: JSON.stringify(subject),
       });
       if (!res.ok) throw new Error("Update failed");
-      alert("✅ Subject updated successfully!");
+      alert(" Subject updated successfully!");
       navigate("/manage-subjects");
     } catch (err) {
       console.error(err);
-      alert("❌ Failed to update subject");
+      alert(" Failed to update subject");
     }
   };
 
@@ -111,7 +111,7 @@ function EditSubject() {
 
   return (
     <div style={styles.page}>
-      <h1 style={styles.title}>✏️ Edit Subject: {subject.name}</h1>
+      <h1 style={styles.title}> Edit Subject: {subject.name}</h1>
       <div style={styles.card}>
         <form style={styles.form} onSubmit={(e) => e.preventDefault()}>
           {displayIntro ? (
@@ -135,7 +135,7 @@ function EditSubject() {
                 onChange={(e) => handleIntroChange("purpose", e.target.value)}
               />
               <button type="button" style={styles.addBtn} onClick={addTopic}>
-                ➕ Add Topic
+                + Add Topic
               </button>
             </>
           ) : (
@@ -214,7 +214,7 @@ function EditSubject() {
                     style={styles.addBtnSmall}
                     onClick={() => addExample(currentTopic - 1)}
                   >
-                    ➕ Add Example
+                    + Add Example
                   </button>
 
                   <button
@@ -222,7 +222,7 @@ function EditSubject() {
                     style={styles.deleteBtn}
                     onClick={() => removeTopic(currentTopic - 1)}
                   >
-                    ❌ Remove Topic
+                     Remove Topic
                   </button>
                 </div>
               )}
@@ -256,7 +256,7 @@ function EditSubject() {
                 style={styles.primaryBtn}
                 onClick={handleSubmit}
               >
-                💾 Save
+                 Save
               </button>
             )}
           </div>
@@ -266,7 +266,7 @@ function EditSubject() {
   );
 }
 
-// 🎨 Clean, compact styles
+//  Clean, compact styles
 const styles = {
   page: {
     minHeight: "100vh",

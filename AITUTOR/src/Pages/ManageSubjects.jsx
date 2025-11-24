@@ -35,7 +35,7 @@ function ManageSubjects() {
   };
 
   const handleEdit = (id) => {
-    navigate(`/edit-subject/${id}`); // pass _id to match backend
+    navigate(`/edit-subject/${id}`);
   };
 
   const filteredSubjects = subjects.filter((s) =>
@@ -43,47 +43,45 @@ function ManageSubjects() {
   );
 
   if (loading)
-  return (
-    <div style={styles.page}>
-      <h2 style={{ textAlign: "center", marginTop: "50px", color: "#ffd700" }}>
-        Loading subjects...
-      </h2>
-    </div>
-  );
-
+    return (
+      <div style={styles.loadingPage}>
+        <div style={styles.spinner}></div>
+        <p style={styles.loadingText}>Loading subjects...</p>
+      </div>
+    );
 
   return (
     <div style={styles.page}>
-      <div style={styles.container}>
-        <h1 style={styles.title}> Manage Subjects</h1>
+      <header style={styles.header}>
+        <h1 style={styles.title}>Manage Subjects</h1>
+        <p style={styles.subtitle}>Edit or remove subjects you have created.</p>
+      </header>
 
-        <input
-          type="text"
-          placeholder="🔍 Search subjects..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          style={styles.search}
-        />
+    <input
+        type="text"
+        placeholder=" Search subjects..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        style={styles.search}
+      />
 
-        {filteredSubjects.length === 0 ? (
-          <p style={styles.empty}>No subjects found.</p>
-        ) : (
+      <div style={styles.grid}>
+        {filteredSubjects.length > 0 ? (
           filteredSubjects.map((subject) => (
             <div key={subject._id} style={styles.card}>
-              <div style={styles.subjectHeader}>
+              <div style={styles.cardHeader}>
                 {subject.icon && (
                   <img src={subject.icon} alt="icon" style={styles.icon} />
                 )}
-                <h3 style={styles.subjectName}>{subject.name}</h3>
+                <h3 style={styles.cardTitle}>{subject.name}</h3>
               </div>
-              <p style={styles.desc}>
+
+              <p style={styles.cardDesc}>
                 {subject.introduction?.overview || "No overview available."}
               </p>
+
               <div style={styles.actions}>
-                <button
-                  style={styles.editBtn}
-                  onClick={() => handleEdit(subject._id)}
-                >
+                <button style={styles.editBtn} onClick={() => handleEdit(subject._id)}>
                   Edit
                 </button>
                 <button
@@ -95,26 +93,175 @@ function ManageSubjects() {
               </div>
             </div>
           ))
+        ) : (
+          <p style={styles.noSubjects}>No subjects found.</p>
         )}
       </div>
     </div>
+
+    
   );
 }
-// Styles (unchanged)
+
+// --------------------
+// STYLES — MATCH EXPLORE PAGE
+// --------------------
 const styles = {
-  page: { minHeight: "100vh", background: "linear-gradient(135deg, #0c111b, #1b2430)", color: "#fff", fontFamily: "'Poppins', sans-serif", padding: "50px 20px", display: "flex", justifyContent: "center" },
-  container: { width: "100%", maxWidth: "950px", backdropFilter: "blur(15px)", display: "flex", flexDirection: "column", gap: "20px" },
-  title: { textAlign: "center", fontSize: "2.5rem", marginBottom: "25px", fontWeight: "700", color: "#ffd700", textShadow: "0 3px 15px rgba(0,0,0,0.7)" },
-  search: { width: "100%", padding: "14px 20px", borderRadius: "15px", border: "none", outline: "none", marginBottom: "20px", background: "rgba(255,255,255,0.05)", color: "#fef9f3", fontSize: "1rem", boxShadow: "inset 0 2px 8px rgba(0,0,0,0.5)", backdropFilter: "blur(5px)", transition: "all 0.3s ease" },
-  card: { background: "rgba(255,255,255,0.05)", borderRadius: "20px", padding: "25px", boxShadow: "0 10px 35px rgba(0,0,0,0.6)", border: "1px solid rgba(255,255,255,0.15)", transition: "all 0.3s ease", backdropFilter: "blur(10px)" },
-  subjectHeader: { display: "flex", alignItems: "center", gap: "15px" },
-  icon: { width: "45px", height: "45px", borderRadius: "10px", objectFit: "cover", boxShadow: "0 4px 15px rgba(0,0,0,0.5)" },
-  subjectName: { color: "#ffd700", fontSize: "1.5rem", margin: 0, fontWeight: "600", textShadow: "0 2px 8px rgba(0,0,0,0.7)" },
-  desc: { marginTop: "10px", color: "#cbd5e1", fontSize: "1rem", lineHeight: "1.5" },
-  actions: { display: "flex", gap: "12px", marginTop: "15px" },
-  editBtn: { background: "linear-gradient(135deg, #222, #444)", border: "none", padding: "10px 20px", borderRadius: "25px", color: "#ffd700", cursor: "pointer", fontWeight: "600", boxShadow: "0 6px 20px rgba(0,0,0,0.6)", transition: "all 0.3s ease" },
-  deleteBtn: { background: "linear-gradient(135deg, #4b0000, #a60000)", border: "none", padding: "10px 20px", borderRadius: "25px", color: "#fff", cursor: "pointer", fontWeight: "600", boxShadow: "0 6px 20px rgba(0,0,0,0.6)", transition: "all 0.3s ease" },
-  empty: { textAlign: "center", color: "#aaa", marginTop: "20px", fontSize: "1.1rem" },
+  page: {
+    minHeight: "100vh",
+    background: "radial-gradient(circle at 20% 20%, #0f172a, #020617 70%)",
+    fontFamily: "'Poppins', sans-serif",
+    color: "#fff",
+    padding: "60px 30px",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+  },
+
+  header: {
+    textAlign: "left",
+    marginBottom: "30px",
+  },
+  title: {
+    fontSize: "2.8rem",
+    fontWeight: "700",
+    background: "linear-gradient(90deg, #facc15, #fde047)",
+    WebkitBackgroundClip: "text",
+    WebkitTextFillColor: "transparent",
+    margin: "0",
+  },
+  subtitle: {
+    color: "#cbd5e1",
+    fontSize: "1.1rem",
+    marginTop: "10px",
+  },
+
+  search: {
+    width: "100%",
+    maxWidth: "600px",
+    padding: "14px 20px",
+    borderRadius: "15px",
+    border: "none",
+    background: "rgba(255,255,255,0.08)",
+    color: "#fff",
+    fontSize: "1rem",
+    backdropFilter: "blur(10px)",
+    boxShadow: "inset 0 2px 8px rgba(0,0,0,0.4)",
+    marginBottom: "40px",
+    outline: "none",
+  },
+
+  grid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+    gap: "30px",
+    width: "100%",
+    maxWidth: "1200px",
+  },
+
+  card: {
+    background: "rgba(255,255,255,0.05)",
+    backdropFilter: "blur(20px)",
+    borderRadius: "20px",
+    border: "1px solid rgba(255,255,255,0.1)",
+    boxShadow: "0 15px 40px rgba(0,0,0,0.5)",
+    padding: "25px 20px",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between",
+    transition: "transform 0.3s ease",
+  },
+
+  cardHeader: {
+    display: "flex",
+    alignItems: "center",
+    gap: "15px",
+  },
+
+  icon: {
+    width: "45px",
+    height: "45px",
+    borderRadius: "10px",
+    objectFit: "cover",
+    boxShadow: "0 0 12px rgba(255,255,255,0.15)",
+  },
+
+  cardTitle: {
+    fontSize: "1.4rem",
+    fontWeight: "600",
+    color: "#facc15",
+  },
+
+  cardDesc: {
+    color: "#e2e8f0",
+    fontSize: "0.95rem",
+    lineHeight: "1.6",
+    marginTop: "15px",
+  },
+
+  actions: {
+    display: "flex",
+    gap: "12px",
+    marginTop: "20px",
+  },
+  editBtn: {
+    background: "linear-gradient(90deg, #2563eb, #3b82f6)",
+    border: "none",
+    padding: "10px 20px",
+    borderRadius: "25px",
+    color: "#fff",
+    cursor: "pointer",
+    fontWeight: "600",
+    transition: "0.3s",
+  },
+  deleteBtn: {
+    background: "linear-gradient(90deg, #dc2626, #b91c1c)",
+    border: "none",
+    padding: "10px 20px",
+    borderRadius: "25px",
+    color: "#fff",
+    cursor: "pointer",
+    fontWeight: "600",
+    transition: "0.3s",
+  },
+
+  noSubjects: {
+    gridColumn: "1 / -1",
+    textAlign: "center",
+    color: "#aaa",
+  },
+
+  loadingPage: {
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    height: "100vh",
+    background: "radial-gradient(circle at 20% 20%, #0f172a, #020617 70%)",
+  },
+  spinner: {
+    width: "50px",
+    height: "50px",
+    border: "5px solid rgba(255,255,255,0.2)",
+    borderTop: "5px solid #3b82f6",
+    borderRadius: "50%",
+    animation: "spin 1s linear infinite",
+    marginBottom: "15px",
+  },
+  loadingText: {
+    color: "#fff",
+    fontSize: "1.1rem",
+  },
+
 };
+
+// Inject keyframes
+const styleSheet = document.createElement("style");
+styleSheet.innerHTML = `
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}`;
+document.head.appendChild(styleSheet);
 
 export default ManageSubjects;

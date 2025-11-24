@@ -1,30 +1,48 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../config";
+// Assuming you have this file exporting the initialized Supabase client
+import { supabase } from "../supabaseClient"; 
 
 function Explore() {
   const [subjects, setSubjects] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingContent, setLoadingContent] = useState(false); // Loading state for API fetch
+  const [loadingAuth, setLoadingAuth] = useState(true); // New state for initial auth check
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/api/subjects`)
-      .then((res) => res.json())
-      .then((data) => {
-        setSubjects(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Error fetching subjects:", err);
-        setLoading(false);
-      });
-  }, []);
+    const checkAuthAndFetch = async () => {
+      // 1. CRITICAL: Check Authentication Status
+      
 
-  if (loading)
+      
+      // Authentication passed, set initial states and start data fetching
+      setLoadingAuth(false);
+      setLoadingContent(true); 
+
+      // 2. Fetch Subjects (Only if authenticated)
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/subjects`);
+        const data = await res.json();
+        setSubjects(data);
+      } catch (err) {
+        console.error("Error fetching subjects:", err);
+      } finally {
+        setLoadingContent(false);
+      }
+    };
+
+    checkAuthAndFetch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [navigate]);
+
+  if (loadingAuth || loadingContent)
     return (
       <div style={styles.loadingPage}>
         <div style={styles.spinner}></div>
-        <p style={styles.loadingText}>Loading subjects...</p>
+        <p style={styles.loadingText}>
+          {loadingAuth ? "Verifying access..." : "Loading subjects..."}
+        </p>
       </div>
     );
 

@@ -52,13 +52,13 @@ function ChangePassword() {
         </div>
 
         <form onSubmit={handleChangePassword} style={styles.form}>
-          <input
+          {/* <input
             type="password"
             placeholder="Current Password (optional)"
             value={currentPassword}
             onChange={(e) => setCurrentPassword(e.target.value)}
             style={styles.input}
-          />
+          /> */}
           <input
             type="password"
             placeholder="New Password"

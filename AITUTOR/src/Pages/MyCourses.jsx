@@ -90,12 +90,27 @@ function MyCourses() {
       </div>
 
       <div style={styles.card}>
-        {filteredCourses.length === 0 ? (
-          <p style={styles.noCourses}>
-            {filter === "unfinished"
-              ? "No unfinished courses found 🎯"
-              : "No finished courses yet 🎉"}
-          </p>
+       {filteredCourses.length === 0 ? (
+          <div style={styles.emptyState}>
+            <p style={styles.noCourses}>
+              {filter === "unfinished"
+                ? "No unfinished courses found "
+                : "No finished courses yet "}
+            </p>
+            <p style={styles.emptyMessage}>
+              {filter === "unfinished"
+                ? "Visit the Explore page to discover and add new courses to start your learning journey!"
+                : "Keep learning and complete your courses to see them here!"}
+            </p>
+            {filter === "unfinished" && (
+              <button
+                style={styles.exploreBtn}
+                onClick={() => navigate("/explore")}
+              >
+                 Explore Courses
+              </button>
+            )}
+          </div>
         ) : (
           <div style={styles.courseGrid}>
             {filteredCourses.map((course, idx) => (
@@ -120,7 +135,7 @@ function MyCourses() {
                 </div>
                 <p style={styles.courseDesc}>
                   {course.status === "finished"
-                    ? "✅ You’ve completed this course!"
+                    ? " You’ve completed this course!"
                     : "Continue your learning journey →"}
                 </p>
                 <button style={styles.viewBtn}>Open Course</button>
@@ -129,10 +144,10 @@ function MyCourses() {
           </div>
         )}
         <button
-        style={styles.quizBtn}
-        onClick={() => navigate(`/performance/${subject.name}`)}
+        style={styles.performanceBtn}
+        onClick={() => navigate(`/performance`)}
       >
-        📈 View Performance
+         View Performance
       </button>
 
       </div>
@@ -151,6 +166,20 @@ const styles = {
     flexDirection: "column",
     alignItems: "center",
   },
+ performanceBtn: {
+  marginTop: "30px",
+  alignSelf: "flex-end",    
+  padding: "12px 28px",
+  borderRadius: "30px",
+  border: "none",
+  background: "linear-gradient(135deg, #2563eb, #3b82f6)",
+  color: "#fff",
+  fontWeight: "600",
+  fontSize: "1rem",
+  cursor: "pointer",
+  transition: "0.3s ease",
+  boxShadow: "0 4px 18px rgba(44, 47, 206, 0.4)",
+},
   title: {
     fontSize: "2.5rem",
     fontWeight: "700",
@@ -263,6 +292,34 @@ const styles = {
     marginTop: "15px",
     fontSize: "1.1rem",
     color: "#fef9f3",
+  },
+   emptyState: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "40px 20px",
+    gap: "15px",
+  },
+  emptyMessage: {
+    color: "rgba(255,255,255,0.7)",
+    textAlign: "center",
+    fontSize: "1rem",
+    maxWidth: "500px",
+    lineHeight: "1.6",
+  },
+  exploreBtn: {
+    marginTop: "10px",
+    padding: "12px 30px",
+    borderRadius: "30px",
+    border: "none",
+    background: "linear-gradient(135deg, #2563eb, #3b82f6)",
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: "1rem",
+    cursor: "pointer",
+    transition: "all 0.3s ease",
+    boxShadow: "0 4px 15px rgba(37, 99, 235, 0.4)",
   },
 };
 
