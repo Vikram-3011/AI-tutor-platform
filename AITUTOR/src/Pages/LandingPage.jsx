@@ -2,7 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 // Assuming you have these assets
 import logo from "../assets/circle.png";
-import heroImage from "../assets/landingAi.png";
+import heroImage from "../assets/landingAI.png";
 
 function LandingPage() {
   const navigate = useNavigate();
