@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const API_BASE_URL = "http://localhost:5000";
+const VITE_API_BASE_URL = "https://ai-tutor-khaki.vercel.app/";
 
 function ManageSubjects() {
   const [subjects, setSubjects] = useState([]);
@@ -15,7 +15,7 @@ function ManageSubjects() {
 
   const fetchSubjects = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/all-subjects`);
+      const res = await fetch(`${VITE_API_BASE_URL}/api/all-subjects`);
       const data = await res.json();
       setSubjects(data);
       setLoading(false);
@@ -27,7 +27,7 @@ function ManageSubjects() {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this subject?")) return;
     try {
-      await fetch(`${API_BASE_URL}/api/subjects/${id}`, { method: "DELETE" });
+      await fetch(`${VITE_API_BASE_URL}/api/subjects/${id}`, { method: "DELETE" });
       setSubjects(subjects.filter((s) => s._id !== id));
     } catch (error) {
       console.error(error);

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createClient } from "@supabase/supabase-js";
-import { API_BASE_URL } from "../config";
+import { VITE_API_BASE_URL } from "../config";
 
 // Initialize Supabase
 const supabase = createClient(
@@ -20,7 +20,7 @@ function Home() {
   useEffect(() => {
     const fetchSubjects = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/subjects`);
+        const res = await fetch(`${VITE_API_BASE_URL}/api/subjects`);
         const data = await res.json();
         const shuffled = data.sort(() => 0.5 - Math.random());
         setExploreSubjects(shuffled.slice(0, 3));
@@ -40,7 +40,7 @@ function Home() {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        const res = await fetch(`${API_BASE_URL}/api/mycourses/${user.email}`);
+        const res = await fetch(`${VITE_API_BASE_URL}/api/mycourses/${user.email}`);
         const data = await res.json();
         const courses = Array.isArray(data) ? data[0]?.courses || [] : data.courses || [];
         setMyCourses(courses.filter((c) => c.status !== "finished").slice(0, 3));

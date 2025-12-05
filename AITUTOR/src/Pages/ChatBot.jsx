@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 
 // Define your backend URL
-const API_BASE_URL = "http://localhost:5000";
+const VITE_API_BASE_URL = "https://ai-tutor-khaki.vercel.app/";
 
 function ChatBot() {
   const [messages, setMessages] = useState([
@@ -24,7 +24,7 @@ function ChatBot() {
     setLoading(true);
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/chat`, {
+      const res = await fetch(`${VITE_API_BASE_URL}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: userMsg }),

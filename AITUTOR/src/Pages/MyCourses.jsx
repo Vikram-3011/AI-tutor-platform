@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createClient } from "@supabase/supabase-js";
-import { API_BASE_URL } from "../config";
+import { VITE_API_BASE_URL } from "../config";
 
 // Initialize Supabase
 const supabase = createClient(
@@ -24,7 +24,7 @@ function MyCourses() {
           return;
         }
 
-        const res = await fetch(`${API_BASE_URL}/api/mycourses/${user.email}`);
+        const res = await fetch(`${VITE_API_BASE_URL}/api/mycourses/${user.email}`);
         if (!res.ok) throw new Error("Failed to fetch courses");
         const data = await res.json();
 

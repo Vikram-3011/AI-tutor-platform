@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { createClient } from "@supabase/supabase-js";
-import { API_BASE_URL } from "../config";
+import { VITE_API_BASE_URL } from "../config";
+
 
 //  Initialize Supabase client
 const supabase = createClient(
@@ -34,7 +35,7 @@ function SubjectDetail() {
 
   //  Fetch subject data
   useEffect(() => {
-    fetch(`${API_BASE_URL}/api/subjects/${name}`)
+    fetch(`${VITE_API_BASE_URL}/api/subjects/${name}`)
       .then((res) => res.json())
       .then((data) => {
         setSubject(data);
@@ -66,7 +67,7 @@ function SubjectDetail() {
       return;
     }
     try {
-      const res = await fetch(`${API_BASE_URL}/api/mycourses/add`, {
+      const res = await fetch(`${VITE_API_BASE_URL}/api/mycourses/add`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -86,7 +87,7 @@ function SubjectDetail() {
   const handleFinishCourse = async () => {
     if (!userEmail) return;
     try {
-      await fetch(`${API_BASE_URL}/api/mycourses/finish`, {
+      await fetch(`${VITE_API_BASE_URL}/api/mycourses/finish`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

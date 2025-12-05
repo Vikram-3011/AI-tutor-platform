@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
 // ✅ FIXED: Define API URL directly to resolve build error
-const API_BASE_URL = "http://localhost:5000";
+const VITE_API_BASE_URL = "https://ai-tutor-khaki.vercel.app/";
 
 function EditSubject() {
   const { id } = useParams();
@@ -15,7 +15,7 @@ function EditSubject() {
   useEffect(() => {
     const fetchSubject = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/subjects/id/${id}`);
+        const res = await fetch(`${VITE_API_BASE_URL}/api/subjects/id/${id}`);
         if (!res.ok) throw new Error("Failed to fetch subject");
         const data = await res.json();
         setSubject({
@@ -94,7 +94,7 @@ function EditSubject() {
 
   const handleSubmit = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/subjects/${id}`, {
+      const res = await fetch(`${VITE_API_BASE_URL}/api/subjects/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(subject),

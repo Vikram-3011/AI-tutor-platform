@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { createClient } from "@supabase/supabase-js";
 
-const API_BASE_URL = "http://localhost:5000"; // backend URL
+const VITE_API_BASE_URL = "https://ai-tutor-khaki.vercel.app/"; // backend URL
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
   import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -35,7 +35,7 @@ function AttendQuiz() {
   useEffect(() => {
     const fetchQuiz = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/quiz/${subjectName}/${topicTitle}`);
+        const res = await fetch(`${VITE_API_BASE_URL}/api/quiz/${subjectName}/${topicTitle}`);
         if (!res.ok) throw new Error("Quiz not found for this topic.");
         const data = await res.json();
         setQuiz(data);
@@ -80,7 +80,7 @@ function AttendQuiz() {
     });
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/quiz/submit`, {
+      const res = await fetch(`${VITE_API_BASE_URL}/api/quiz/submit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

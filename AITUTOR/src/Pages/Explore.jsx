@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { API_BASE_URL } from "../config";
+import { VITE_API_BASE_URL } from "../config";
 // Assuming you have this file exporting the initialized Supabase client
 import { supabase } from "../supabaseClient"; 
 
@@ -22,7 +22,7 @@ function Explore() {
 
       // 2. Fetch Subjects (Only if authenticated)
       try {
-        const res = await fetch(`${API_BASE_URL}/api/subjects`);
+        const res = await fetch(`${VITE_API_BASE_URL}/api/subjects`);
         const data = await res.json();
         setSubjects(data);
       } catch (err) {

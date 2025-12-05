@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
-import { API_BASE_URL } from "../config";
+import { VITE_API_BASE_URL } from "../config";
 
 function Profile() {
   const navigate = useNavigate();
@@ -31,11 +31,11 @@ function Profile() {
 
         // 2. Fetch Profile from Custom API
         const emailEncoded = encodeURIComponent(supaUser.email);
-        let res = await fetch(`${API_BASE_URL}/api/profile/${emailEncoded}`);
+        let res = await fetch(`${VITE_API_BASE_URL}/api/profile/${emailEncoded}`);
 
         // 3. Handle Profile Creation if 404
         if (res.status === 404) {
-          res = await fetch(`${API_BASE_URL}/api/create-profile`, {
+          res = await fetch(`${VITE_API_BASE_URL}/api/create-profile`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email: supaUser.email }),
@@ -91,7 +91,7 @@ function Profile() {
 
     try {
       const emailEncoded = encodeURIComponent(user.email);
-      const res = await fetch(`${API_BASE_URL}/api/profile/${emailEncoded}`, {
+      const res = await fetch(`${VITE_API_BASE_URL}/api/profile/${emailEncoded}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(profile),

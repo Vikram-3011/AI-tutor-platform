@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-const API_BASE_URL = "http://localhost:5000";
+const VITE_API_BASE_URL = "https://ai-tutor-khaki.vercel.app/";
 
 function UploadQuiz() {
   const navigate = useNavigate();
@@ -23,7 +23,7 @@ function UploadQuiz() {
 
   // 1. Fetch All Subjects on Mount
   useEffect(() => {
-    fetch(`${API_BASE_URL}/api/all-subjects`)
+    fetch(`${VITE_API_BASE_URL}/api/all-subjects`)
       .then((res) => res.json())
       .then((data) => setSubjects(data))
       .catch((err) => console.error("Error loading subjects:", err));
@@ -36,7 +36,7 @@ function UploadQuiz() {
 
     if (subjectName) {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/subjects/${subjectName}`);
+        const res = await fetch(`${VITE_API_BASE_URL}/api/subjects/${subjectName}`);
         const data = await res.json();
         setTopics(data.topics || []);
         setStep(2);
@@ -53,7 +53,7 @@ function UploadQuiz() {
     setMessage("");
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/quiz/${selectedSubject}/${topicTitle}`);
+      const res = await fetch(`${VITE_API_BASE_URL}/api/quiz/${selectedSubject}/${topicTitle}`);
       if (res.ok) {
         const data = await res.json();
         if (data.questions && data.questions.length > 0) {
@@ -93,7 +93,7 @@ function UploadQuiz() {
     }
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/quiz`, {
+      const res = await fetch(`${VITE_API_BASE_URL}/api/quiz`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

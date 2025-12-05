@@ -46,7 +46,7 @@ function UserMenu({ currentTheme, toggleTheme }) {
   const [avatar, setAvatar] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
-  const API_BASE = "http://localhost:5000";
+  const VITE_API_BASE_URL = "https://ai-tutor-khaki.vercel.app/";
 
   useEffect(() => {
     const fetchProfile = async (currentUser) => {
@@ -59,7 +59,7 @@ function UserMenu({ currentTheme, toggleTheme }) {
 
       const emailEncoded = encodeURIComponent(currentUser.email);
       try {
-        const res = await fetch(`${API_BASE}/api/profile/${emailEncoded}`);
+        const res = await fetch(`${VITE_API_BASE_URL}/api/profile/${emailEncoded}`);
         if (res.ok) {
           const data = await res.json();
           if (data.avatar) {
@@ -138,7 +138,7 @@ function App() {
   
   const location = useLocation();
   const navigate = useNavigate();
-  const API_BASE = "http://localhost:5000";
+  const VITE_API_BASE_URL = "https://ai-tutor-khaki.vercel.app/";
 
   // ✅ 1. Robust Logic to Hide Sidebar (Includes "/" root path)
   const hideSidebarRoutes = ["/landingpage", "/signup", "/signin", "/contact", "/"];
@@ -174,7 +174,7 @@ function App() {
         return;
       }
       try {
-        const res = await fetch(`${API_BASE}/api/roles/register-login`, {
+        const res = await fetch(`${VITE_API_BASE_URL}/api/roles/register-login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ 
