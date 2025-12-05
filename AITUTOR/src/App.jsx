@@ -46,7 +46,7 @@ function UserMenu({ currentTheme, toggleTheme }) {
   const [avatar, setAvatar] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
-  const API_BASE = "http://localhost:5000";
+  const API_BASE = "https://ai-tutor-khaki.vercel.app/";
 
   useEffect(() => {
     const fetchProfile = async (currentUser) => {
