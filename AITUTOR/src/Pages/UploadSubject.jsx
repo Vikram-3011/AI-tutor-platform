@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const VITE_API_BASE_URL = "https://ai-tutor-khaki.vercel.app/";
+const VITE_API_BASE_URL = "https://ai-tutor-khaki.vercel.app";
 
 function UploadSubject() {
   const navigate = useNavigate();

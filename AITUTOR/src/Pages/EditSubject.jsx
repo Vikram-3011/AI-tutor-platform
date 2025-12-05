@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
 // ✅ FIXED: Define API URL directly to resolve build error
-const VITE_API_BASE_URL = "https://ai-tutor-khaki.vercel.app/";
+const VITE_API_BASE_URL = "https://ai-tutor-khaki.vercel.app";
 
 function EditSubject() {
   const { id } = useParams();
