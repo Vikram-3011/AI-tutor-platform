@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 
 // Define your backend URL
-const VITE_API_BASE_URL = "https://ai-tutor-khaki.vercel.app/";
+const VITE_API_BASE_URL = "https://ai-tutor-khaki.vercel.app";
 
 function ChatBot() {
   const [messages, setMessages] = useState([
