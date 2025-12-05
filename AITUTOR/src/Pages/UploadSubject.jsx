@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const API_BASE_URL = "http://localhost:5000";
+const VITE_API_BASE_URL = "https://ai-tutor-khaki.vercel.app/";
 
 function UploadSubject() {
   const navigate = useNavigate();
@@ -131,7 +131,7 @@ function UploadSubject() {
     };
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/subjects`, {
+      const res = await fetch(`${VITE_API_BASE_URL}/api/subjects`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(subjectData),

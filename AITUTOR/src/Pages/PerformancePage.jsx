@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
-import { API_BASE_URL } from "../config";
+import { VITE_API_BASE_URL } from "../config";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Bar, Doughnut } from "react-chartjs-2";
 import {
@@ -53,7 +53,7 @@ function PerformancePage() {
     if (!userEmail) return;
     const loadSubjects = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/mycourses/${userEmail}`);
+        const res = await fetch(`${VITE_API_BASE_URL}/api/mycourses/${userEmail}`);
         const { courses } = await res.json();
 
         const done = courses.filter((c) => c.status === "finished");
@@ -102,7 +102,7 @@ function PerformancePage() {
         
         // Parallel Fetch for all subjects
         const promises = finishedSubjects.map(async (sub) => {
-            const res = await fetch(`${API_BASE_URL}/api/user/performance/${emailEncoded}/${encodeURIComponent(sub)}`);
+            const res = await fetch(`${VITE_API_BASE_URL}/api/user/performance/${emailEncoded}/${encodeURIComponent(sub)}`);
             const data = await res.json();
             
             // Calculate average for this specific subject

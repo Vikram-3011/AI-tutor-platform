@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
-import { API_BASE_URL } from "../config";
+import { VITE_API_BASE_URL } from "../config";
 
 function SignIn() {
   const navigate = useNavigate();
@@ -23,14 +23,14 @@ function SignIn() {
     if (user) {
       try {
         // Ensure profile exists
-        await fetch(`${API_BASE_URL}/api/create-profile`, {
+        await fetch(`${VITE_API_BASE_URL}/api/create-profile`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email: user.email }),
         });
 
         // Ensure user role entry exists
-        await fetch(`${API_BASE_URL}/api/roles/register-login`, {
+        await fetch(`${VITE_API_BASE_URL}/api/roles/register-login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

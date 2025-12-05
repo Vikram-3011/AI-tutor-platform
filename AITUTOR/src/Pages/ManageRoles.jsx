@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { API_BASE_URL } from "../config";
+import { VITE_API_BASE_URL } from "../config";
 import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
 
@@ -28,7 +28,7 @@ function ManageRoles() {
 
   const fetchUsers = async (email) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/roles/all`);
+      const res = await fetch(`${VITE_API_BASE_URL}/api/roles/all`);
       const data = await res.json();
       const requester = data.find((u) => u.email === email);
 
@@ -54,7 +54,7 @@ function ManageRoles() {
 
   const handlePromote = async (targetEmail) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/roles/promote`, {
+      const res = await fetch(`${VITE_API_BASE_URL}/api/roles/promote`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ requesterEmail: currentEmail, targetEmail }),
@@ -69,7 +69,7 @@ function ManageRoles() {
 
   const handleDemote = async (targetEmail) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/roles/demote`, {
+      const res = await fetch(`${VITE_API_BASE_URL}/api/roles/demote`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ requesterEmail: currentEmail, targetEmail }),
